@@ -5,8 +5,12 @@
 .snapshots
 .tools
 .env.local
+.env.local.php
 .env.*.local
+config/secrets/prod/prod.decrypt.private.php
+assets/vendor
+public/assets
+public/bundles
 tests
 var
 vendor
-
