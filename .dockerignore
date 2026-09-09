@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.phpunit.cache
+.snapshots
+.tools
+.env.local
+.env.*.local
+tests
+var
+vendor
+

@@ -122,4 +122,10 @@ Une copie des sources avant reprise se trouve dans `.snapshots/codex-before-2026
 
 ## Suite
 
-Voir [la feuille de route](docs/FEUILLE_DE_ROUTE.md). Les fonctionnalités IA, les intégrations sociales supplémentaires, le résumé quotidien, les notifications push, l’installation mobile et la publication restent à développer ou à valider. La licence du dépôt est encore déclarée `proprietary` : choisir une licence et vérifier les droits sur le contenu avant sa publication open source.
+## Mise en ligne pour les essais
+
+Le projet contient un `Dockerfile` et un Blueprint `render.yaml` prêts pour Render. Le Blueprint crée l’application Symfony et sa base PostgreSQL, applique les migrations et charge les données de démonstration au démarrage.
+
+Pour lancer la mise en ligne, ouvrir [le tableau de bord Blueprint de Render](https://dashboard.render.com/blueprints), connecter GitHub et sélectionner ce dépôt. La consultation publique fonctionne sans connexion Google. Pour activer la connexion, ajouter `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` dans les variables secrètes Render, puis déclarer `https://infotrak-re.onrender.com/connect/google/check` comme URI de redirection dans Google Cloud.
+
+Voir [la feuille de route](docs/FEUILLE_DE_ROUTE.md). Les fonctionnalités IA, les intégrations sociales supplémentaires, le résumé quotidien, les notifications push et l’installation mobile restent à développer ou à valider. Le code est distribué sous licence MIT ; les contributeurs doivent toutefois vérifier séparément les droits associés aux contenus agrégés.
