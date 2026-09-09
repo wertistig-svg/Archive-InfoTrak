@@ -5,7 +5,10 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: googleId
 
     firewalls:
         dev:
@@ -14,18 +17,27 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
-
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            provider: app_user_provider
+            entry_point: App\Security\GoogleAuthenticator
+            custom_authenticator: App\Security\GoogleAuthenticator
+            logout:
+                path: app_logout
+                target: app_login
+                invalidate_session: true
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/article/, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/infotrak$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/communautes$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/search$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/articles/\d+/comments$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/preferences$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/feedback$, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:

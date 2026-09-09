@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }} — InfoTrak{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ importmap(['app', 'infotrak']) }}
+{% endblock %}
+
+{% block body %}
+<main id="top" class="article-page">
+  <div class="x-topbar">
+    <a class="back-btn" href="{{ path('app_home') }}" aria-label="Retour au fil personnalisé">←</a>
+    <strong>InfoTrak.re <span class="beta-tag">BÊTA</span></strong>
+  </div>
+
+  <article class="x-post">
+    <div class="x-head">
+      <span class="avatar x-avatar">{{ article.source.name|slice(0, 1) }}{% if article.sourceHost %}<img class="favicon" src="https://www.google.com/s2/favicons?domain={{ article.sourceHost }}&sz=128" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />{% endif %}</span>
+      <div>
+        <strong>{{ article.source.name }}</strong><br />
+        <small class="x-handle">@{{ article.source.slug }} · {{ article.publishedAt|date('d/m/Y H:i') }} · {{ article.category }} · {{ article.place }}</small>
+      </div>
+    </div>
+
+    <h1 class="x-title">{{ article.title }}</h1>
+    {% if article.demo %}<p class="demo-notice">Exemple de démonstration : ce contenu sert aux tests et ne constitue pas une actualité vérifiée.</p>{% endif %}
+    <p class="x-text">{{ article.content ?? article.excerpt }}</p>
+
+    {% if article.hasImage %}
+    <figure class="x-media">
+      <img src="{{ article.imageUrl }}" alt="Aperçu de la page source : {{ article.source.name }}" loading="lazy" referrerpolicy="no-referrer" />
+      <figcaption><small>Image : {{ article.source.name }} — <a class="source-link" href="{{ article.sourceUrl }}" target="_blank" rel="noopener">voir la page source</a></small></figcaption>
+    </figure>
+    {% endif %}
+
+    {% set embed = video_embed(article.videoUrl) %}
+    {% if embed %}
+      {% include 'components/_video_player.html.twig' with {url: article.videoUrl, title: article.title, mode: 'full'} %}
+    {% endif %}
+
+    <div class="x-actions" data-xbar data-article="{{ article.id }}">
+      <button data-x="comments" aria-label="Voir les commentaires">💬 <span id="commentsCount">{{ commentsCount }}</span></button>
+      <button data-x="share" aria-label="Partager">🔁 <span>Partager</span></button>
+      <button data-x="like" aria-label="J'aime" class="{{ userLiked ? 'active' : '' }}">❤ <span id="likesCount">{{ likesCount }}</span></button>
+      <span aria-label="{{ article.viewCount }} vues">👁 {{ article.viewCount }}</span>
+    </div>
+
+    <p class="x-foot">
+      <span class="trust-label">{{ article.trustLabel }}</span>
+      {% if article.sourceUrl %} · <a class="source-link" href="{{ article.sourceUrl }}" target="_blank" rel="noopener">Consulter à la source ({{ article.source.name }}) →</a>{% endif %}
+    </p>
+  </article>
+
+  <div class="source-trust">
+    <div style="flex:1;min-width:0"><strong>{{ article.source.name }}</strong><p>La source est indiquée pour vous permettre de vérifier le contexte. Un lien retrouvé ou un flux de presse ne garantit pas l’exactitude des faits.</p></div>
+    {% if article.sourceUrl %}<a class="source-link" href="{{ article.sourceUrl }}" target="_blank" rel="noopener">Source →</a>{% endif %}
+  </div>
+
+  <section class="comments" id="comments" data-article="{{ article.id }}" aria-label="Commentaires">
+    <h2>Commentaires (<span id="commentsTotal">{{ commentsCount }}</span>)</h2>
+    {% if app.user %}<form id="commentForm">
+      <label class="visually-hidden" for="commentInput">Votre commentaire</label>
+      <textarea id="commentInput" maxlength="500" rows="3" placeholder="Donnez votre avis sur cette info… (500 lettres max)"></textarea>
+      <button class="save-preferences" type="submit" style="width:auto;padding:9px 18px">Publier</button>
+    </form>{% else %}<p><a class="source-link" href="{{ path('app_login') }}">Connectez-vous pour commenter →</a></p>{% endif %}
+    {% if commentsCount > 0 %}
+    <button class="text-button comments-toggle" id="commentsToggle" aria-expanded="false" aria-controls="commentList">Voir les {{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}</button>
+    {% endif %}
+    <p class="live-status" id="commentsStatus" hidden></p>
+    <div id="commentList"{% if commentsCount > 0 %} hidden{% endif %}></div>
+  </section>
+
+  {% if related|length > 0 %}
+  <h2 style="margin-top:28px">À lire aussi</h2>
+  <div class="related-list">
+    {% for r in related %}
+    <a href="{{ path('app_article_show', {slug: r.slug}) }}">{{ r.title }}<small>{{ r.source.name }} · {{ r.publishedAt|date('d/m H:i') }}</small></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</main>
+<div class="toast" id="toast" role="status"></div>
+{% endblock %}

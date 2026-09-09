@@ -1,0 +1,10 @@
+/* Sans empattements, proche de X, sans CDN. */
+:root { --font-reading: Arial, "Helvetica Neue", system-ui, sans-serif; }
+body, button, input, textarea, select { font-family: var(--font-reading); }
+.reader-shell .pill, .stat-panel td small { font-family: var(--font-reading); }
+body { line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-weight: 750; }
+.reader-heading h1 { letter-spacing: -1px; }
+.reader-shell .news-card h2 { font-weight: 750; }
+.reader-shell .news-card h3 { line-height: 1.4; }
+.reader-heading h1, .news-card h2, .news-card h3 { overflow-wrap: anywhere; }

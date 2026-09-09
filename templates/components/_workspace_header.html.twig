@@ -1,0 +1,5 @@
+<header class="workspace-header">
+  <a class="workspace-brand" href="{{ path('app_home') }}">Info<span>Trak</span><small>.re</small></a>
+  <nav aria-label="Navigation principale"><a href="{{ path('app_home') }}">Le fil</a><a href="{{ path('app_communities') }}" {{ active == 'communities' ? 'aria-current="page"' }}>Communautés</a><a href="{{ path('app_infotrak') }}" {{ active == 'dashboard' ? 'aria-current="page"' }}>En chiffres</a></nav>
+  <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème clair ou sombre">◐</button>
+</header>

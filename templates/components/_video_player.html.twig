@@ -1,0 +1,30 @@
+{# Lecteur vidéo intégré — aucune redirection externe.
+   Paramètres : url (string|null), title (string), mode ('inline' avec bouton dépliable | 'full' affiché directement). #}
+{% set embed = video_embed(url|default(null)) %}
+{% if embed %}
+{% set ext = embed.type == 'file' ? embed.embedUrl|split('?')|first|split('.')|last|lower : '' %}
+{% set mime = ext == 'webm' ? 'video/webm' : (ext == 'ogv' ? 'video/ogg' : 'video/mp4') %}
+<div class="video-player" data-video-player>
+  {% if mode|default('inline') == 'inline' %}
+    <button class="video-toggle" data-video-toggle aria-expanded="false" aria-label="Voir la vidéo intégrée : {{ title }}">▶ Voir la vidéo</button>
+    <div class="video-frame" data-video-frame hidden>
+      {% if embed.type == 'file' %}
+        <video controls playsinline preload="none" data-video-tag title="{{ title }}">
+          <source src="{{ embed.embedUrl }}" type="{{ mime }}" />
+          Votre navigateur ne peut pas lire cette vidéo.
+        </video>
+      {% else %}
+        <iframe data-video-iframe data-src="{{ embed.embedUrl }}" title="{{ title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="video-frame video-frame-open">
+      {% if embed.type == 'file' %}
+        <video controls playsinline preload="metadata" data-video-tag title="{{ title }}" src="{{ embed.embedUrl }}"></video>
+      {% else %}
+        <iframe data-video-iframe src="{{ embed.embedUrl }}" title="{{ title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endif %}

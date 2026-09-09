@@ -18,3 +18,7 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Sauvegardes locales de travail, non destinées au dépôt public.
+/.snapshots/
+/.tools/

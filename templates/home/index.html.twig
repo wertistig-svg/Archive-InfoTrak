@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+{% block title %}InfoTrak.re — Votre regard sur l’actualité{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}">
+{% endblock %}
+{% block javascripts %}{{ importmap(['app', 'infotrak']) }}{% endblock %}
+{% block body %}
+{% set pill = {'La Réunion': 'local', 'Cybersécurité': 'cyber', 'Emploi': 'job', 'Jeux': 'games', 'Environnement': 'env'} %}
+<a class="skip-link" href="#pour-vous">Aller aux actualités</a>
+<div class="reader-shell">
+  <aside class="sidebar reader-sidebar" id="sidebar" aria-label="Navigation principale">
+    <a class="brand" href="{{ path('app_home') }}"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Info<span>Trak</span><small>.re</small></span></a>
+    <div class="section-label">VOTRE ESPACE</div>
+    <nav>
+      <a class="nav-item {{ not explore ? 'active' }}" href="{{ path('app_home') }}"><span class="nav-icon" aria-hidden="true">◈</span>Pour vous</a>
+      <a class="nav-item {{ explore ? 'active' }}" href="{{ path('app_home', {view:'all'}) }}"><span class="nav-icon" aria-hidden="true">◎</span>Explorer</a>
+      <a class="nav-item" href="#sources"><span class="nav-icon" aria-hidden="true">▤</span>Les sources</a>
+      <a class="nav-item" href="{{ path('app_communities') }}"><span class="nav-icon" aria-hidden="true">#</span>Communautés</a>
+      <a class="nav-item" href="{{ path('app_infotrak') }}"><span class="nav-icon" aria-hidden="true">▥</span>En chiffres</a>
+    </nav>
+    <section class="my-topics" aria-label="Sujets">
+      <div class="section-label">SUIVRE UN SUJET</div>
+      <a class="topic {{ not activeTopic ? 'active' }}" href="{{ path('app_home', filters|merge({topic:'', view:'all'})) }}" {{ not activeTopic ? 'aria-current="page"' : '' }}>Tous les sujets</a>
+      {% for t in sidebarTopics %}<a class="topic {{ activeTopic == t ? 'active' }}" href="{{ path('app_home', filters|merge({topic:t})) }}" {{ activeTopic == t ? 'aria-current="page"' : '' }}><span class="topic-dot {{ pill[t] ?? 'extra' }}"></span>{{ t }}</a>{% endfor %}
+      <button class="sidebar-manage" type="button" data-open-preferences>Gérer mes {{ topics|length }} sujets <span>→</span></button>
+    </section>
+    <section class="sidebar-networks" aria-label="Réseaux sociaux"><div class="section-label">RÉSEAUX & COMMUNAUTÉS</div>
+      <div class="sidebar-network-grid">{% for key, label in networks %}<a href="{{ path('app_communities', {networks:[key]}) }}"><span class="network-symbol" aria-hidden="true">{{ key == 'x' ? '𝕏' : (key == 'threads' ? '@' : (key == 'tiktok' ? '♪' : label|slice(0,1))) }}</span><span>{{ label == 'X / Twitter' ? 'X' : label }}</span></a>{% endfor %}</div>
+      <a class="community-shortcut" href="{{ path('app_communities') }}">Explorer les communautés <span>→</span></a>
+    </section>
+    <div class="sidebar-bottom"><span class="beta-tag">VERSION BÊTA</span><p>Un regard local.<br>Un monde à découvrir.</p><small>Pensé pour La Réunion · 974</small></div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+  <main class="reader-main" id="top">
+    <header class="topbar reader-topbar">
+      <button class="mobile-menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">☰</button>
+      <a class="mobile-brand" href="{{ path('app_home') }}">Info<span>Trak</span><small>.re</small></a>
+      <form class="search" action="{{ path('app_home') }}" method="get" role="search">
+        {% for key, value in filters %}{% if key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+        <label class="visually-hidden" for="feedSearch">Rechercher dans les actualités</label>
+        <span aria-hidden="true">⌕</span><input id="feedSearch" name="q" value="{{ query }}" type="search" maxlength="120" placeholder="Un sujet, une actualité, une source…"><button type="submit" aria-label="Rechercher">↵</button>
+      </form>
+      <div class="top-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème clair ou sombre">◐</button>
+        {% if app.user %}
+          <button class="icon-btn bell" id="notificationButton" aria-label="Voir les notifications" aria-expanded="false">♧<span class="notif-badge" id="notifCount" {{ unreadCount == 0 ? 'hidden' }}>{{ unreadCount }}</span></button>
+          <div class="avatar-wrap"><button class="avatar-btn" id="avatarButton" aria-expanded="false" aria-label="Menu du compte"><span class="avatar">{{ app.user.initials }}</span></button>
+            <div class="user-menu" id="userMenu" hidden>
+              <div class="user-menu-head"><strong>{{ app.user.displayName }}</strong></div>
+              <button class="user-menu-item" data-menu="preferences">Mes préférences</button>
+              <a class="user-menu-item" href="{{ path('app_account_social') }}"><span><strong>Synchroniser mes réseaux</strong><small>X, Instagram, TikTok et plus</small></span></a>
+              <button class="user-menu-item" data-menu="theme">Thème <span data-theme-label>Sombre</span></button>
+              <button class="user-menu-item" data-menu="read-all">Tout marquer comme lu</button>
+              <a class="user-menu-item" href="{{ path('app_logout') }}">Se déconnecter</a>
+            </div>
+          </div>
+        {% else %}<a class="login-link" href="{{ path('app_login') }}">Se connecter <span aria-hidden="true">↗</span></a>{% endif %}
+      </div>
+    </header>
+    {% if app.user %}
+    <div class="notif-panel" id="notifPanel" hidden><div class="notif-head"><h3>Vos notifications</h3><button class="text-button" id="markAllRead">Tout marquer lu</button></div><div id="notifList"></div></div>
+    {% endif %}
+    <div class="reader-content">
+      <section class="reader-heading">
+        <div><p class="eyebrow">{{ todayLabel }} <span class="edition-label">ÉDITION RÉUNION</span></p><h1>{% if app.user %}Bonjour {{ app.user.displayName|split(' ')|first }}.{% else %}L’actualité, <em>à votre rythme.</em>{% endif %}</h1><p class="heading-subtitle">{{ explore ? 'Explorez toutes les actualités collectées.' : 'Vos sujets. Vos sources. L’essentiel à portée de main.' }}</p></div>
+        <button class="filter-button" id="filterButton"><span aria-hidden="true">☷</span> Personnaliser mon fil</button>
+      </section>
+      <nav class="zone-tabs" aria-label="Filtrer par zone">
+        <a class="{{ not activeZone ? 'selected' }}" href="{{ path('app_home', filters|merge({zone:'', view:'all'})) }}">Toutes les zones</a>
+        {% for z in zones %}<a class="{{ activeZone == z ? 'selected' }}" href="{{ path('app_home', filters|merge({zone:z})) }}">{{ z }}</a>{% endfor %}
+      </nav>
+      <div class="reader-columns">
+        <div class="news-column">
+          <div class="feed-toolbar"><h2>{{ query ? 'Résultats de recherche' : (activeTopic ?: 'Votre sélection') }} <span id="visibleCount">{{ result.total }}</span></h2><span>Les plus récentes d’abord</span></div>
+          {% if query or activeTopic or activeZone or preference.topics or preference.zones %}<div class="active-filters"><span>{{ query ? '« ' ~ query ~ ' » · ' }}{{ activeTopic ?: (explore ? 'Tous les sujets' : (preference.topics|join(', ') ?: 'Tous les sujets')) }} · {{ activeZone ?: (explore ? 'Toutes les zones' : (preference.zones|join(', ') ?: 'Toutes les zones')) }}</span><a href="{{ path('app_home', {view:'all', demo:includeDemo ? 1 : 0}) }}">Réinitialiser</a></div>{% endif %}
+          {% if includeDemo %}<p class="demo-notice">Mode test : les exemples de démonstration sont inclus et signalés sur chaque article.</p>{% endif %}
+          <section id="pour-vous" aria-label="Actualités">
+            {% if featured %}
+              {% include 'components/_news_card.html.twig' with {a:featured, variant:'featured-story', number:1} %}
+              <div class="briefing-grid">{% for a in sideArticles %}{% include 'components/_news_card.html.twig' with {a:a, variant:'compact-story', number:loop.index + 1} %}{% endfor %}</div>
+              {% if feedArticles %}<div class="section-heading feed-heading"><h2>La suite du fil</h2><span class="section-rule"></span></div><div class="feed-list">{% for a in feedArticles %}{% include 'components/_news_card.html.twig' with {a:a, variant:'feed-item', number:loop.index + 4} %}{% endfor %}</div>{% endif %}
+            {% endif %}
+            <div class="feed-empty" id="feedEmpty" {{ featured ? 'hidden' }}><span aria-hidden="true">◎</span><h2>Aucune actualité pour ces choix.</h2><p>Essayez un autre sujet ou une autre zone. Les articles que vous avez masqués restent masqués.</p><a class="primary-link" href="{{ path('app_home', {view:'all'}) }}">Explorer les actualités →</a>{% if demoCount and not includeDemo %}<a class="source-link" href="{{ path('app_home', {view:'all', demo:1}) }}">Essayer avec les exemples de démonstration</a>{% endif %}</div>
+          </section>
+          {% if result.pages > 1 %}<nav class="pagination" aria-label="Pages du fil">{% if result.page > 1 %}<a href="{{ path('app_home', filters|merge({page:result.page - 1})) }}">← Précédente</a>{% endif %}<span>Page {{ result.page }} sur {{ result.pages }}</span>{% if result.page < result.pages %}<a href="{{ path('app_home', filters|merge({page:result.page + 1})) }}">Suivante →</a>{% endif %}</nav>{% endif %}
+          <details class="web-search"><summary>Élargir la recherche au web <span>↗</span></summary><label for="webSearchInput">Rechercher aussi dans les sources externes</label><input type="search" id="webSearchInput" placeholder="Au moins 3 lettres…" maxlength="120"><p>Les résultats externes ne font pas l’objet d’une vérification indépendante.</p></details>
+          <section class="live-section" id="liveResults" hidden aria-live="polite"><h2>Sur le web : <span id="liveQuery"></span></h2><p class="live-status" id="liveStatus" hidden></p><div class="live-list" id="liveList"></div></section>
+        </div>
+        <aside class="context-column" aria-label="À propos de votre fil">
+          <section class="context-card personal-card"><span class="card-kicker">FAITES LE TRI</span><h2>Un fil qui<br>vous ressemble.</h2><p>Un sujet vous intéresse ? Dites-le. Une info ne vous parle pas ? Masquez-la.</p><button id="openPreferences" class="primary-link">Choisir mes sujets <span>↗</span></button>{% if not app.user %}<small>Sans compte, vos choix sont conservés dans cette session.</small>{% endif %}</section>
+          <section class="context-card trust-card"><span class="card-kicker">LA TRANSPARENCE D’ABORD</span><h2>Remontez à la source.</h2><p>Chaque actualité vous indique d’où elle vient. Une source identifiée ne signifie pas que les faits sont vérifiés.</p><details><summary>Comment lire les indications ?</summary><dl><dt>Source identifiée</dt><dd>L’éditeur ou le flux est identifié.</dd><dt>Source retrouvée</dt><dd>Des mots du titre ont été retrouvés sur la page d’origine.</dd><dt>À recouper / Réseau social</dt><dd>Le contenu demande une vérification complémentaire.</dd><dt>Démonstration</dt><dd>Un exemple réservé aux tests.</dd></dl></details></section>
+          <section class="context-card source-directory" id="sources"><span class="card-kicker">LE CARNET DE SOURCES</span><h2>{{ sourceList|length }} sources référencées</h2><div class="source-directory-list">{% for s in sourceList %}{% if s.websiteUrl %}<a href="{{ s.websiteUrl }}" target="_blank" rel="noopener noreferrer"><span class="source-initial">{{ s.name|slice(0,1) }}</span><span>{{ s.name }}</span><span aria-hidden="true">↗</span></a>{% endif %}{% else %}<p>Les premières sources apparaîtront après l’import.</p>{% endfor %}</div><small>Leur présence ici ne garantit pas la disponibilité de leurs flux.</small></section>
+          <div class="collection-note"><span class="status-dot"></span><span>{% if latestArticle %}Dernier ajout : {{ latestArticle.createdAt|date('d/m/Y à H:i', 'Indian/Reunion') }}{% else %}En attente du premier import{% endif %}<small>Heure de La Réunion · actualisation manuelle</small></span></div>
+          {% if demoCount %}<a class="demo-toggle" href="{{ path('app_home', filters|merge({demo:includeDemo ? 0 : 1})) }}">{{ includeDemo ? 'Masquer les exemples de test' : 'Afficher les exemples de test' }} →</a>{% endif %}
+        </aside>
+      </div>
+      <footer class="reader-footer"><strong>InfoTrak<span>.re</span></strong><span>La Réunion, et au-delà.</span><span>Version de test · Vos retours font avancer le projet.</span></footer>
+    </div>
+  </main>
+</div>
+<dialog id="preferencesModal" aria-labelledby="preferencesTitle">
+  <button class="modal-close" aria-label="Fermer">×</button><p class="eyebrow">VOTRE FIL, VOS CHOIX</p><h2 id="preferencesTitle">Ce qui vous intéresse.</h2><p>Aucune sélection signifie tous les sujets ou toutes les zones.</p>
+  <div class="preference-group"><span>Sujets suivis</span><div class="choice-row" id="topicChoices">{% for t in topics %}<button data-value="{{ t }}" aria-pressed="{{ t in preference.topics ? 'true' : 'false' }}" class="{{ t in preference.topics ? 'selected' }}">{{ t }}</button>{% endfor %}</div></div>
+  <div class="preference-group"><span>Zones suivies</span><div class="choice-row" id="zoneChoices">{% for z in zones %}<button data-value="{{ z }}" aria-pressed="{{ z in preference.zones ? 'true' : 'false' }}" class="{{ z in preference.zones ? 'selected' }}">{{ z }}</button>{% endfor %}</div></div>
+  <div class="preference-group"><span>Alertes dans l’application{{ not app.user ? ' · avec un compte' }}</span><div class="choice-row radio" id="frequencyChoices"><button data-value="important" aria-pressed="{{ preference.frequency == 'important' ? 'true' : 'false' }}" class="{{ preference.frequency == 'important' ? 'selected' }}">Important seulement</button><button data-value="live" aria-pressed="{{ preference.frequency == 'live' ? 'true' : 'false' }}" class="{{ preference.frequency == 'live' ? 'selected' }}">Tous les nouveaux articles</button>{% if preference.frequency == 'daily' %}<button data-value="daily" class="selected" aria-pressed="true" disabled>Résumé quotidien (à venir)</button>{% endif %}</div><p class="preference-help">Le rythme des alertes ne limite pas votre lecture. Le résumé quotidien et les notifications sur téléphone sont en préparation.</p></div>
+  <button class="save-preferences" id="savePreferences">Enregistrer mes choix</button>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}

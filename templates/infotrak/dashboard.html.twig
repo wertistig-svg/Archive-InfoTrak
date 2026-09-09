@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}InfoTrak — Tableau de bord{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ importmap(['app', 'infotrak']) }}
+{% endblock %}
+
+{% block body %}
+{% include 'components/_workspace_header.html.twig' with {active:'dashboard'} %}
+<main class="workspace-page dashboard-page">
+  <section class="workspace-heading"><div><p class="workspace-kicker">LE TABLEAU DE BORD</p><h1>L’actualité, en chiffres<span>.</span></h1><p>Un aperçu de ce qu’InfoTrak a réellement collecté.</p></div><a class="outline-link" href="{{ path('app_home', {view:'all'}) }}">Explorer le fil ↗</a></section>
+  <section class="dashboard-metrics" aria-label="Indicateurs de collecte">
+    <article class="dashboard-metric"><span class="metric-label">Articles collectés <span aria-hidden="true">▤</span></span><strong>{{ total }}</strong><small>Hors exemples de démonstration</small></article>
+    <article class="dashboard-metric"><span class="metric-label">Sources représentées <span aria-hidden="true">◎</span></span><strong>{{ stats.sources }}</strong><small>Avec au moins un article collecté</small></article>
+    <article class="dashboard-metric"><span class="metric-label">Actualités récentes <span aria-hidden="true">↗</span></span><strong>{{ stats.recent }}</strong><small>Publiées dans les 7 derniers jours</small></article>
+    <article class="dashboard-metric"><span class="metric-label">Vos notifications <span aria-hidden="true">◉</span></span><strong>{{ app.user ? unreadCount : '—' }}</strong><small>{{ app.user ? 'Alertes non lues dans votre compte' : 'Connectez-vous pour vos alertes' }}</small></article>
+  </section>
+  <div class="dashboard-status"><span class="status-dot" aria-hidden="true"></span><span>{% if latestArticle %}Dernier ajout le {{ latestArticle.createdAt|date('d/m/Y à H:i') }}{% else %}En attente du premier import{% endif %}</span><span>Heure de La Réunion · collecte manuelle</span></div>
+  <section class="dashboard-distributions" aria-label="Répartition des articles">
+  {% for type, config in {'topic':{title:'Les sujets à la une', subtitle:'Comment se répartit votre bibliothèque.', values:byCategory}, 'zone':{title:'D’où vient l’actualité ?', subtitle:'Les zones couvertes par les articles.', values:byPlace}} %}
+    <section class="distribution-panel"><div class="panel-heading"><div><p class="workspace-kicker">{{ type == 'topic' ? 'PAR SUJET' : 'PAR ZONE' }}</p><h2>{{ config.title }}</h2><p class="panel-description">{{ config.subtitle }}</p></div><span class="count-badge">{{ config.values|length }}</span></div>
+      <table class="distribution-table"><caption class="visually-hidden">Nombre d’articles {{ type == 'topic' ? 'par sujet' : 'par zone' }}, hors exemples</caption><thead><tr><th scope="col">{{ type == 'topic' ? 'Sujet' : 'Zone' }}</th><th scope="col">Articles</th><th scope="col">Part</th></tr></thead><tbody>
+      {% for label, count in config.values %}<tr><th scope="row"><a href="{{ path('app_home', {view:'all'}|merge(type == 'topic' ? {topic:label} : {zone:label})) }}">{{ label }} <span aria-hidden="true">↗</span></a><span class="distribution-track" aria-hidden="true"><span style="width:{{ total ? (100 * count / total)|round(1) : 0 }}%"></span></span></th><td>{{ count }}</td><td>{{ total ? (100 * count / total)|round : 0 }}<small> %</small></td></tr>{% else %}<tr><td colspan="3" class="dashboard-empty">Les premières données apparaîtront après un import.</td></tr>{% endfor %}
+      </tbody></table>
+    </section>
+  {% endfor %}
+  </section>
+  <section class="dashboard-note"><span class="note-icon" aria-hidden="true">i</span><div><h2>Ce que ces chiffres racontent</h2><p>Ils décrivent les articles stockés dans InfoTrak. Les {{ demoCount }} exemples de test sont exclus des indicateurs et répartitions. Une source représentée ne certifie pas les faits et ces données ne mesurent pas la population ni le marché du travail.</p></div><a href="{{ path('app_communities') }}">Explorer les communautés →</a></section>
+</main><div class="toast" id="toast" role="status"></div>
+{% endblock %}

@@ -1,0 +1,10 @@
+<article class="news-card story {{ variant }}" data-category="{{ a.category }}" data-place="{{ a.place }}" data-article-id="{{ a.id }}">
+  <div class="news-card-top"><span class="pill {{ pill[a.category] ?? 'local' }}">{{ a.category }}</span><span class="article-place">{{ a.place }}</span>{% if variant == 'featured-story' %}<span class="lead-label">À LA UNE</span>{% endif %}{% if variant == 'feed-item' %}<span class="feed-number">{{ '%02d'|format(number) }}</span>{% endif %}</div>
+  {% if variant == 'featured-story' and a.hasImage %}<a href="{{ path('app_article_show', {slug:a.slug}) }}" tabindex="-1" aria-hidden="true"><img class="lead-image" src="{{ a.imageUrl }}" alt="" referrerpolicy="no-referrer" loading="lazy"></a>{% endif %}
+  {% if variant == 'featured-story' %}<h2>{% else %}<h3>{% endif %}<a href="{{ path('app_article_show', {slug:a.slug}) }}">{{ a.title }}</a>{% if variant == 'featured-story' %}</h2>{% else %}</h3>{% endif %}
+  {% if a.excerpt %}<p class="news-excerpt">{{ a.excerpt|slice(0, variant == 'featured-story' ? 270 : 145) }}{{ a.excerpt|length > (variant == 'featured-story' ? 270 : 145) ? '…' }}</p>{% endif %}
+  {% include 'components/_video_player.html.twig' with {url:a.videoUrl, title:a.title, mode:'inline'} %}
+  <div class="news-source"><strong>{{ a.source.name }}</strong><time datetime="{{ a.publishedAt|date('c') }}">{{ a.publishedAt|date('d/m/Y · H:i', 'Indian/Reunion') }}</time></div>
+  <div class="news-card-bottom"><span class="trust-label {{ a.demo ? 'is-demo' }}">{{ a.trustLabel }}</span>{% if a.sourceUrl %}<a class="source-link" href="{{ a.sourceUrl }}" target="_blank" rel="noopener noreferrer">Source ↗</a>{% endif %}</div>
+  <div class="feedback-row" data-article="{{ a.id }}"><span>{{ variant == 'featured-story' ? 'Cette info vous intéresse ?' : 'Votre avis' }}</span><button data-feedback="1" aria-label="Cette info m’intéresse" aria-pressed="{{ feedbackMap[a.id] ?? false ? 'true' : 'false' }}" class="{{ feedbackMap[a.id] ?? false ? 'active' }}">+ Ça m’intéresse</button><button data-feedback="0" aria-label="Masquer cet article">× Masquer</button></div>
+</article>

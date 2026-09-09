@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes réseaux — InfoTrak.re{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}">{% endblock %}
+{% block javascripts %}{{ importmap(['app', 'infotrak']) }}{% endblock %}
+{% block body %}
+{% include 'components/_workspace_header.html.twig' with {active:'account'} %}
+<main class="workspace-page social-account-page">
+  <section class="workspace-heading"><div><p class="workspace-kicker">VOTRE COMPTE</p><h1>Mes réseaux<span>.</span></h1><p>Centralisez ici les comptes que vous souhaitez relier à InfoTrak.</p></div><a class="back-to-feed" href="{{ path('app_home') }}">← Retour au fil</a></section>
+  <section class="sync-explainer"><span class="sync-icon" aria-hidden="true">↻</span><div><h2>Deux connexions différentes</h2><p><strong>La collecte publique</strong> alimente InfoTrak pour tout le monde avec les API du site. <strong>La synchronisation personnelle</strong> demandera votre accord pour retrouver les contenus de votre compte. InfoTrak n’enregistrera jamais votre mot de passe.</p></div></section>
+  <div class="social-account-grid">
+    {% for key, label in networks %}
+      <article class="social-account-card">
+        <div class="social-account-title"><span class="network-symbol" aria-hidden="true">{{ key == 'x' ? '𝕏' : (key == 'threads' ? '@' : (key == 'tiktok' ? '♪' : label|slice(0,1))) }}</span><div><h2>{{ label }}</h2><span class="connector-state {{ connectorStatuses[key].configured ? 'is-ready' : 'is-waiting' }}">Collecte publique : {{ connectorStatuses[key].configured ? 'prête' : 'à configurer' }}</span></div></div>
+        <div class="personal-sync-state"><span></span><div><strong>Compte personnel non relié</strong><small>La connexion sera activée après validation de l’application par {{ label }}.</small></div></div>
+        <button type="button" disabled>Connecter {{ label }}</button>
+      </article>
+    {% endfor %}
+  </div>
+  <section class="sync-roadmap"><p class="workspace-kicker">MISE EN SERVICE</p><h2>Ce qui manque pour activer les boutons</h2><ol><li>Créer et faire valider l’application InfoTrak chez chaque plateforme.</li><li>Ajouter les identifiants OAuth dans les secrets du serveur.</li><li>Tester le consentement, la révocation et la suppression des données avant ouverture au public.</li></ol><p>Reddit fournit déjà des discussions publiques au site sans relier votre compte. TikTok est présent dans l’interface ; sa recherche publique exige un accès Research approuvé.</p></section>
+</main>
+{% endblock %}
