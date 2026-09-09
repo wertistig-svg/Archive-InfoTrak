@@ -3,7 +3,6 @@ set -eu
 cd /var/www/html
 sed -i "s/^Listen .*/Listen ${PORT:-10000}/" /etc/apache2/ports.conf
 php bin/console cache:clear --env=prod --no-debug
-php bin/console asset-map:compile --env=prod --no-debug
 
 attempt=0
 until php bin/console doctrine:query:sql "SELECT 1" --env=prod --no-debug >/dev/null 2>&1; do
