@@ -9,32 +9,30 @@
 <a class="skip-link" href="#pour-vous">Aller aux actualités</a>
 <div class="reader-shell">
   <aside class="sidebar reader-sidebar" id="sidebar" aria-label="Navigation principale">
+    <button class="drawer-close" type="button" aria-label="Fermer le menu">{% include 'components/_icon.html.twig' with {name:'close'} %}</button>
     <a class="brand" href="{{ path('app_home') }}"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Info<span>Trak</span><small>.re</small></span></a>
     <div class="section-label">VOTRE ESPACE</div>
     <nav>
-      <a class="nav-item {{ not explore ? 'active' }}" href="{{ path('app_home') }}"><span class="nav-icon" aria-hidden="true">◈</span>Pour vous</a>
-      <a class="nav-item {{ explore ? 'active' }}" href="{{ path('app_home', {view:'all'}) }}"><span class="nav-icon" aria-hidden="true">◎</span>Explorer</a>
-      <a class="nav-item" href="#sources"><span class="nav-icon" aria-hidden="true">▤</span>Les sources</a>
-      <a class="nav-item" href="{{ path('app_communities') }}"><span class="nav-icon" aria-hidden="true">#</span>Communautés</a>
-      <a class="nav-item" href="{{ path('app_infotrak') }}"><span class="nav-icon" aria-hidden="true">▥</span>En chiffres</a>
-      <a class="nav-item" href="{{ path('app_push') }}"><span class="nav-icon" aria-hidden="true">♧</span>Sur mon téléphone</a>
+      <a class="nav-item {{ not explore ? 'active' }}" href="{{ path('app_home') }}">{% include 'components/_icon.html.twig' with {name:'home'} %}Pour vous</a>
+      <a class="nav-item {{ explore ? 'active' }}" href="{{ path('app_home', {view:'all'}) }}">{% include 'components/_icon.html.twig' with {name:'explore'} %}Explorer</a>
+      <a class="nav-item" href="#sources">{% include 'components/_icon.html.twig' with {name:'sources'} %}Les sources</a>
+      <a class="nav-item" href="{{ path('app_communities') }}">{% include 'components/_icon.html.twig' with {name:'community'} %}Communautés</a>
+      <a class="nav-item" href="{{ path('app_infotrak') }}">{% include 'components/_icon.html.twig' with {name:'chart'} %}En chiffres</a>
     </nav>
     <section class="my-topics" aria-label="Sujets">
       <div class="section-label">SUIVRE UN SUJET</div>
       <a class="topic {{ not activeTopic ? 'active' }}" href="{{ path('app_home', filters|merge({topic:'', view:'all'})) }}" {{ not activeTopic ? 'aria-current="page"' : '' }}>Tous les sujets</a>
       {% for t in sidebarTopics %}<a class="topic {{ activeTopic == t ? 'active' }}" href="{{ path('app_home', filters|merge({topic:t})) }}" {{ activeTopic == t ? 'aria-current="page"' : '' }}><span class="topic-dot {{ pill[t] ?? 'extra' }}"></span>{{ t }}</a>{% endfor %}
-      <button class="sidebar-manage" type="button" data-open-preferences>Gérer mes {{ topics|length }} sujets <span>→</span></button>
     </section>
     <section class="sidebar-networks" aria-label="Réseaux sociaux"><div class="section-label">RÉSEAUX & COMMUNAUTÉS</div>
       <div class="sidebar-network-grid">{% for key, label in networks %}<a href="{{ path('app_communities', {networks:[key]}) }}"><span class="network-symbol" aria-hidden="true">{{ key == 'x' ? '𝕏' : (key == 'threads' ? '@' : (key == 'tiktok' ? '♪' : label|slice(0,1))) }}</span><span>{{ label == 'X / Twitter' ? 'X' : label }}</span></a>{% endfor %}</div>
-      <a class="community-shortcut" href="{{ path('app_communities') }}">Explorer les communautés <span>→</span></a>
     </section>
-    <div class="sidebar-bottom"><span class="beta-tag">VERSION BÊTA</span><p>Un regard local.<br>Un monde à découvrir.</p><small>Pensé pour La Réunion · 974</small></div>
+    <div class="sidebar-bottom"><span class="beta-tag">BÊTA</span><small>La Réunion & la France.<br>L’essentiel, à votre rythme.</small></div>
   </aside>
   <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
   <main class="reader-main" id="top">
     <header class="topbar reader-topbar">
-      <button class="mobile-menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">☰</button>
+      <button class="mobile-menu" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">{% include 'components/_icon.html.twig' with {name:'menu'} %}</button>
       <a class="mobile-brand" href="{{ path('app_home') }}">Info<span>Trak</span><small>.re</small></a>
       <form class="search" action="{{ path('app_home') }}" method="get" role="search">
         {% for key, value in filters %}{% if key != 'q' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
@@ -44,11 +42,12 @@
       <div class="top-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème clair ou sombre">◐</button>
         {% if app.user %}
-          <button class="icon-btn bell" id="notificationButton" aria-label="Voir les notifications" aria-expanded="false">♧<span class="notif-badge" id="notifCount" {{ unreadCount == 0 ? 'hidden' }}>{{ unreadCount }}</span></button>
+          <button class="icon-btn bell" id="notificationButton" aria-label="Voir les notifications" aria-expanded="false">{% include 'components/_icon.html.twig' with {name:'bell'} %}<span class="notif-badge" id="notifCount" {{ unreadCount == 0 ? 'hidden' }}>{{ unreadCount }}</span></button>
           <div class="avatar-wrap"><button class="avatar-btn" id="avatarButton" aria-expanded="false" aria-label="Menu du compte"><span class="avatar">{{ app.user.initials }}</span></button>
             <div class="user-menu" id="userMenu" hidden>
               <div class="user-menu-head"><strong>{{ app.user.displayName }}</strong></div>
               <button class="user-menu-item" data-menu="preferences">Mes préférences</button>
+              <a class="user-menu-item" href="{{ path('app_push') }}">{% include 'components/_icon.html.twig' with {name:'phone'} %}<span><strong>Sur mon téléphone</strong><small>Installation et notifications</small></span></a>
               <a class="user-menu-item" href="{{ path('app_account_social') }}"><span><strong>Synchroniser mes réseaux</strong><small>X, Instagram, TikTok et plus</small></span></a>
               <button class="user-menu-item" data-menu="theme">Thème <span data-theme-label>Sombre</span></button>
               <button class="user-menu-item" data-menu="read-all">Tout marquer comme lu</button>

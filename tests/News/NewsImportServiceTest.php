@@ -10,6 +10,24 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class NewsImportServiceTest extends KernelTestCase
 {
+    public function testExistingRssArticleGetsCompleteSummaryAndPublisherZone(): void
+    {
+        self::bootKernel();
+        $tag = bin2hex(random_bytes(6));
+        $rss = $this->fakeRss($tag);
+        $this->serviceWithRss($rss, $this->fakeFeed())->import();
+        $rss = str_replace('78 coureurs au départ du prologue.', '78 coureurs au départ du prologue. Le départ est prévu ce jeudi. Le parcours comporte trois étapes.', $rss);
+        $rss = str_replace('<item>', '<item><category>International</category>', $rss);
+        $stats = $this->serviceWithRss($rss, $this->fakeFeed())->import();
+        self::assertSame(0, $stats['created']);
+        $em = static::getContainer()->get('doctrine')->getManager();
+        $article = $em->getRepository(Article::class)->findOneBy(['sourceUrl' => 'https://example.com/articles/tour-reunion-'.$tag]);
+        self::assertStringContainsString('Le parcours comporte trois étapes.', $article->getContent());
+        self::assertSame('International', $article->getPlace());
+        foreach ($em->getRepository(Article::class)->findBy(['sourceUrl' => ['https://example.com/articles/tour-reunion-'.$tag, 'https://example.com/articles/arnaques-sms-'.$tag]]) as $created) { $em->remove($created); }
+        $em->flush();
+    }
+
     public function testSpipDateIsPublicationDateAndUndatedItemsAreSkipped(): void
     {
         self::bootKernel();

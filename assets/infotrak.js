@@ -66,23 +66,43 @@ function initInfotrak() {
     const sidebar = document.querySelector('#sidebar');
     const hamburger = document.querySelector('.mobile-menu');
     const backdrop = document.querySelector('#sidebarBackdrop');
+    let drawerScroll = 0;
+    const background = document.querySelector('.reader-main') ?? document.querySelector('main');
 
     function syncHamburger() {
         if (!hamburger || !sidebar) return;
         const open = document.body.classList.contains('sidebar-open');
         hamburger.setAttribute('aria-expanded', String(open));
-        hamburger.textContent = open ? '✕' : '☰';
+        hamburger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
     }
     function openDrawer() {
+        drawerScroll = window.scrollY;
+        closeNotifPanel();
+        closeUserMenu();
         document.body.classList.add('sidebar-open');
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${drawerScroll}px`;
+        document.body.style.width = '100%';
+        background?.setAttribute('inert', '');
+        sidebar?.setAttribute('role', 'dialog');
+        sidebar?.setAttribute('aria-modal', 'true');
         backdrop?.removeAttribute('hidden');
         syncHamburger();
+        sidebar?.querySelector('button, a')?.focus();
     }
     function closeDrawer() {
         if (!document.body.classList.contains('sidebar-open')) return;
         document.body.classList.remove('sidebar-open');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        background?.removeAttribute('inert');
+        sidebar?.removeAttribute('role');
+        sidebar?.removeAttribute('aria-modal');
         backdrop?.setAttribute('hidden', '');
+        window.scrollTo(0, drawerScroll);
         syncHamburger();
+        hamburger?.focus({ preventScroll: true });
     }
     if (hamburger && sidebar) {
         syncHamburger();
@@ -97,6 +117,13 @@ function initInfotrak() {
         // Choisir un lien/sujet referme le tiroir pour voir le contenu.
         sidebar.addEventListener('click', (event) => {
             if (event.target.closest('a,button')) closeDrawer();
+        });
+        sidebar.addEventListener('keydown', (event) => {
+            if (event.key !== 'Tab' || !document.body.classList.contains('sidebar-open')) return;
+            const items = [...sidebar.querySelectorAll('a[href],button')].filter(el => el.getClientRects().length);
+            const first = items[0], last = items.at(-1);
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
         });
         window.matchMedia('(min-width: 1101px)').addEventListener?.('change', () => {
             closeDrawer();

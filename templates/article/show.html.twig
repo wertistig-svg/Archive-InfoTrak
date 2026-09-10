@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ article.title }} — InfoTrak{% endblock %}
+{% block title %}{{ article.displayTitle }} — InfoTrak{% endblock %}
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}" />
@@ -22,13 +22,18 @@
       <span class="avatar x-avatar">{{ article.source.name|slice(0, 1) }}{% if article.sourceHost %}<img class="favicon" src="https://www.google.com/s2/favicons?domain={{ article.sourceHost }}&sz=128" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />{% endif %}</span>
       <div>
         <strong>{{ article.source.name }}</strong><br />
-        <small class="x-handle">@{{ article.source.slug }} · {{ article.publishedAt|date('d/m/Y H:i') }} · {{ article.category }} · {{ article.place }}</small>
+        <small class="x-handle">{{ article.publishedAt|date('d/m/Y à H:i', 'Indian/Reunion') }} · {{ article.place }}{% if article.category != article.place %} · {{ article.category }}{% endif %}</small>
       </div>
     </div>
 
-    <h1 class="x-title">{{ article.title }}</h1>
+    <h1 class="x-title">{{ article.displayTitle }}</h1>
     {% if article.demo %}<p class="demo-notice">Exemple de démonstration : ce contenu sert aux tests et ne constitue pas une actualité vérifiée.</p>{% endif %}
-    <p class="x-text">{{ article.content ?? article.excerpt }}</p>
+    <section class="article-brief" aria-label="L’essentiel">
+      <p class="brief-label">L’ESSENTIEL</p>
+      {% if article.readingSummary %}<p class="x-text">{{ article.readingSummary }}</p><p class="brief-attribution">Extrait condensé de {{ article.source.name }}.</p>
+      {% else %}<p class="x-text summary-unavailable">La source ne fournit pas de résumé suffisamment détaillé. Retrouvez les informations dans son article original.</p>{% endif %}
+      {% if article.sourceUrl %}<a class="article-original" href="{{ article.sourceUrl }}" target="_blank" rel="noopener noreferrer">Lire l’article complet chez {{ article.source.name }} ↗</a>{% endif %}
+    </section>
 
     {% if article.hasImage %}
     <figure class="x-media">
@@ -63,7 +68,7 @@
   <h2 style="margin-top:28px">À lire aussi</h2>
   <div class="related-list">
     {% for r in related %}
-    <a href="{{ path('app_article_show', {slug: r.slug}) }}">{{ r.title }}<small>{{ r.source.name }} · {{ r.publishedAt|date('d/m H:i') }}</small></a>
+    <a href="{{ path('app_article_show', {slug: r.slug}) }}">{{ r.displayTitle }}<small>{{ r.source.name }} · {{ r.publishedAt|date('d/m H:i') }}</small></a>
     {% endfor %}
   </div>
   {% endif %}

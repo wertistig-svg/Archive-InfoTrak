@@ -94,6 +94,13 @@ class Article
         return $this->verificationLabel;
     }
     public function getTitle(): string { return $this->title; }
+    public function getDisplayTitle(): string { return \App\News\NewsBrief::title($this->title, $this->source?->getName() ?? ''); }
+    public function getReadingSummary(): string
+    {
+        $text = $this->content ?: ($this->excerpt ?? '');
+        return $this->source?->getType() === 'social' ? \App\News\NewsBrief::text($text) : \App\News\NewsBrief::summarize($text, $this->getDisplayTitle());
+    }
+    public function getCardSummary(): string { return \App\News\NewsBrief::summarize($this->getReadingSummary(), $this->getDisplayTitle(), 70, 2); }
     public function setTitle(string $title): self { $this->title = $title; return $this; }
     public function getSlug(): string { return $this->slug; }
     public function setSlug(string $slug): self { $this->slug = $slug; return $this; }

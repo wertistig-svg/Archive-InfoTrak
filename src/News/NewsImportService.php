@@ -131,6 +131,8 @@ final class NewsImportService
                 break;
             }
             $description = (string) ($node->description ?? '');
+            $encoded = (string) $node->children('http://purl.org/rss/1.0/modules/content/')->encoded;
+            if (mb_strlen($encoded) > mb_strlen($description)) { $description = $encoded; }
             $title = trim((string) ($node->title ?? ''));
             if ('' === $title) {
                 // Certains flux sociaux (Mastodon) n'ont pas de titre : on le dérive du texte.
@@ -155,6 +157,7 @@ final class NewsImportService
                 'title' => $title,
                 'link' => $link,
                 'description' => $description,
+                'publisherZone' => in_array(trim((string) $node->category), ['International', 'France'], true) ? trim((string) $node->category) : null,
                 'publisher' => trim((string) ($node->source ?? '')),
                 'author' => '',
                 'publishedAt' => $publishedAt,
@@ -275,7 +278,14 @@ final class NewsImportService
         /** @var ArticleRepository $articles */
         $articles = $this->em->getRepository(Article::class);
         if (null !== $existing = $articles->findOneBy(['sourceUrl' => $item['link']])) {
-            if (!$dryRun) { $existing->setPublishedAt($item['publishedAt']); }
+            if (!$dryRun) {
+                $existing->setPublishedAt($item['publishedAt']);
+                if ($item['publisherZone'] ?? null) { $existing->setPlace($item['publisherZone']); }
+                $brief = NewsBrief::summarize($item['description'], $existing->getTitle());
+                if (mb_strlen($brief) > mb_strlen(NewsBrief::summarize($existing->getContent() ?? '', $existing->getTitle()))) {
+                    $existing->setContent($brief)->setExcerpt(NewsBrief::summarize($brief, $existing->getTitle(), 70, 2));
+                }
+            }
             return false;
         }
 
@@ -289,21 +299,21 @@ final class NewsImportService
         }
 
         $source = $this->resolveSource($item, $feed, $dryRun);
-        $excerpt = FeedClassifier::excerptOf($item['description']);
-        if ('' === $excerpt) {
-            $excerpt = $item['title'];
-        }
-        if ('' !== $item['author']) {
-            $excerpt .= sprintf(' — par %s', $item['author']);
+        $brief = NewsBrief::summarize($item['description'], $item['title']);
+        $excerpt = NewsBrief::summarize($brief, $item['title'], 70, 2);
+        if ($feed['sourceType'] === 'social') {
+            $excerpt = FeedClassifier::excerptOf($item['description']);
+            if ($item['author'] !== '') { $excerpt .= ' — par '.$item['author']; }
+            $brief = $excerpt;
         }
 
         $article = (new Article())
             ->setTitle(mb_substr($item['title'], 0, 255))
             ->setSlug($slug)
             ->setExcerpt($excerpt)
-            ->setContent($excerpt)
+            ->setContent($brief)
             ->setCategory(FeedClassifier::categoryFor($item['title'], $feed['category']))
-            ->setPlace(FeedClassifier::placeFor($item['title'], $feed['place']))
+            ->setPlace($item['publisherZone'] ?? FeedClassifier::placeFor($item['title'], $feed['place']))
             ->setSource($source)
             ->setSourceUrl($item['link'])
             ->setPublishedAt($item['publishedAt'])

@@ -1,18 +1,27 @@
 <header class="workspace-header">
-  <button class="workspace-menu-button mobile-menu" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true">☰</span></button>
+  <button class="workspace-menu-button mobile-menu" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">{% include 'components/_icon.html.twig' with {name:'menu'} %}</button>
   <a class="workspace-brand" href="{{ path('app_home') }}">Info<span>Trak</span><small>.re</small></a>
   <nav aria-label="Navigation principale"><a href="{{ path('app_home') }}">Le fil</a><a href="{{ path('app_communities') }}" {{ active == 'communities' ? 'aria-current="page"' }}>Communautés</a><a href="{{ path('app_infotrak') }}" {{ active == 'dashboard' ? 'aria-current="page"' }}>En chiffres</a></nav>
   <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème clair ou sombre">◐</button>
+  {% if app.user %}
+  <div class="avatar-wrap"><button class="avatar-btn" id="avatarButton" aria-expanded="false" aria-label="Menu du compte"><span class="avatar">{{ app.user.initials }}</span></button>
+    <div class="user-menu" id="userMenu" hidden>
+      <div class="user-menu-head"><strong>{{ app.user.displayName }}</strong></div>
+      <a class="user-menu-item" href="{{ path('app_push') }}">{% include 'components/_icon.html.twig' with {name:'phone'} %}Sur mon téléphone</a>
+      <a class="user-menu-item" href="{{ path('app_account_social') }}">Synchroniser mes réseaux</a>
+      <a class="user-menu-item" href="{{ path('app_logout') }}">Se déconnecter</a>
+    </div>
+  </div>
+  {% endif %}
 </header>
 <aside class="sidebar workspace-sidebar" id="sidebar" aria-label="Menu InfoTrak">
   <button class="workspace-drawer-close" type="button" aria-label="Fermer le menu">×</button>
   <a class="brand" href="{{ path('app_home') }}"><span>Info<span>Trak</span><small>.re</small></span></a>
   <p class="section-label">NAVIGATION</p>
   <nav>
-    <a class="nav-item" href="{{ path('app_home') }}"><span class="nav-icon" aria-hidden="true">⌂</span>Le fil</a>
-    <a class="nav-item {{ active == 'communities' ? 'active' }}" href="{{ path('app_communities') }}"><span class="nav-icon" aria-hidden="true">#</span>Communautés</a>
-    <a class="nav-item {{ active == 'dashboard' ? 'active' }}" href="{{ path('app_infotrak') }}"><span class="nav-icon" aria-hidden="true">▥</span>En chiffres</a>
-    <a class="nav-item" href="{{ path('app_push') }}"><span class="nav-icon" aria-hidden="true">♧</span>Notifications téléphone</a>
+    <a class="nav-item" href="{{ path('app_home') }}">{% include 'components/_icon.html.twig' with {name:'home'} %}Le fil</a>
+    <a class="nav-item {{ active == 'communities' ? 'active' }}" href="{{ path('app_communities') }}">{% include 'components/_icon.html.twig' with {name:'community'} %}Communautés</a>
+    <a class="nav-item {{ active == 'dashboard' ? 'active' }}" href="{{ path('app_infotrak') }}">{% include 'components/_icon.html.twig' with {name:'chart'} %}En chiffres</a>
   </nav>
   <p class="section-label workspace-sidebar-section">ZONES COUVERTES</p>
   <nav><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'La Réunion'}) }}">La Réunion</a><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'France'}) }}">France</a></nav>
