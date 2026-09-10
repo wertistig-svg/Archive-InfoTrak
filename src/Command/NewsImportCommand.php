@@ -61,7 +61,7 @@ class NewsImportCommand extends Command
             return Command::SUCCESS;
         }
 
-        $io->success(sprintf('%d article(s) importé(s), %d ignoré(s). Les alertes sont préparées à la prochaine ouverture de chaque espace personnel.', $stats['created'], $stats['skipped']));
+        $io->success(sprintf('%d article(s) importé(s), %d ignoré(s). La boucle de collecte traite ensuite les abonnements aux notifications.', $stats['created'], $stats['skipped']));
 
         return Command::SUCCESS;
     }

@@ -143,8 +143,11 @@ final class NewsImportService
             if ($feed['perItemSource']) {
                 $link = self::extractDirectLink($description, $link);
             }
-            $ts = strtotime((string) ($node->pubDate ?? ''));
-            $publishedAt = false !== $ts ? new \DateTimeImmutable('@'.$ts) : new \DateTimeImmutable();
+            // SPIP (Témoignages) publie dc:date et non pubDate.
+            $dc = $node->children('http://purl.org/dc/elements/1.1/');
+            $ts = strtotime((string) ($node->pubDate ?? $dc->date ?? ''));
+            if (false === $ts) { continue; }
+            $publishedAt = new \DateTimeImmutable('@'.$ts);
             if ($publishedAt < $cutoff) {
                 continue;
             }
@@ -271,7 +274,8 @@ final class NewsImportService
     {
         /** @var ArticleRepository $articles */
         $articles = $this->em->getRepository(Article::class);
-        if (null !== $articles->findOneBy(['sourceUrl' => $item['link']])) {
+        if (null !== $existing = $articles->findOneBy(['sourceUrl' => $item['link']])) {
+            if (!$dryRun) { $existing->setPublishedAt($item['publishedAt']); }
             return false;
         }
 

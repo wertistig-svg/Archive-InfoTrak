@@ -10,6 +10,22 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class NewsImportServiceTest extends KernelTestCase
 {
+    public function testSpipDateIsPublicationDateAndUndatedItemsAreSkipped(): void
+    {
+        self::bootKernel();
+        $tag = bin2hex(random_bytes(6));
+        $date = new \DateTimeImmutable('-2 days');
+        $rss = str_replace('<rss version="2.0">', '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">', $this->fakeRss($tag));
+        $rss = preg_replace('/<pubDate>.*?<\/pubDate>/', '<dc:date>'.$date->format(DATE_ATOM).'</dc:date>', $rss, 1);
+        $rss = preg_replace('/<pubDate>.*?<\/pubDate>/', '', $rss);
+        $stats = $this->serviceWithRss($rss, $this->fakeFeed())->import();
+        self::assertSame(1, $stats['created']);
+        $em = static::getContainer()->get('doctrine')->getManager();
+        $article = $em->getRepository(Article::class)->findOneBy(['sourceUrl' => 'https://example.com/articles/tour-reunion-'.$tag]);
+        self::assertSame($date->getTimestamp(), $article->getPublishedAt()->getTimestamp());
+        $em->remove($article); $em->flush();
+    }
+
     public function testLongSourceUrlIsPreservedWithoutBlockingImport(): void
     {
         self::bootKernel();
