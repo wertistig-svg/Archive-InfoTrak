@@ -10,6 +10,22 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class NewsImportServiceTest extends KernelTestCase
 {
+    public function testLongSourceUrlIsPreservedWithoutBlockingImport(): void
+    {
+        self::bootKernel();
+        $tag = bin2hex(random_bytes(6));
+        $url = 'https://example.com/articles/'.str_repeat('long-link-', 100).$tag;
+        $rss = str_replace('https://example.com/articles/tour-reunion-'.$tag, $url, $this->fakeRss($tag));
+        $stats = $this->serviceWithRss($rss, $this->fakeFeed())->import();
+        self::assertSame(2, $stats['created']);
+        $em = static::getContainer()->get('doctrine')->getManager();
+        $article = $em->getRepository(Article::class)->findOneBy(['sourceUrl' => $url]);
+        self::assertNotNull($article);
+        self::assertSame($url, $article->getSourceUrl());
+        foreach ($em->getRepository(Article::class)->findBy(['sourceUrl' => [$url, 'https://example.com/articles/arnaques-sms-'.$tag]]) as $created) { $em->remove($created); }
+        $em->flush();
+    }
+
     private function serviceWithRss(string $rss, array $feed): NewsImportService
     {
         $container = static::getContainer();

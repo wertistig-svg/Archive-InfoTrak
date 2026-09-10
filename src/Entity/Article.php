@@ -45,7 +45,7 @@ class Article
     private ?Source $source = null;
 
     /** Lien direct vers l'article d'origine ("consulter à la source"). */
-    #[ORM\Column(length: 500, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $sourceUrl = null;
 
     /** URL vidéo (mp4 / embed) lue directement dans l'app. Null = pas de vidéo. */
