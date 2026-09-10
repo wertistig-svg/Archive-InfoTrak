@@ -151,7 +151,7 @@ final class ReaderFlowTest extends WebTestCase
 
     public function testSearchAndZoneFiltersAreCombinedAndWildcardsAreLiteral(): void
     {
-        $this->client->request('GET', '/', ['q' => $this->tag, 'zone' => 'Japon']);
+        $this->client->request('GET', '/', ['q' => $this->tag, 'zone' => 'France']);
         self::assertSelectorCount(0, '.news-card');
         $this->client->request('GET', '/', ['q' => $this->tag.'%']);
         self::assertSelectorCount(0, '.news-card');

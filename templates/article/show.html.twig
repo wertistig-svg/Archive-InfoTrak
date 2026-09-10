@@ -43,10 +43,9 @@
     {% endif %}
 
     <div class="x-actions" data-xbar data-article="{{ article.id }}">
-      <button data-x="comments" aria-label="Voir les commentaires">💬 <span id="commentsCount">{{ commentsCount }}</span></button>
-      <button data-x="share" aria-label="Partager">🔁 <span>Partager</span></button>
-      <button data-x="like" aria-label="J'aime" class="{{ userLiked ? 'active' : '' }}">❤ <span id="likesCount">{{ likesCount }}</span></button>
-      <span aria-label="{{ article.viewCount }} vues">👁 {{ article.viewCount }}</span>
+      <button data-x="share" aria-label="Partager"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7M5 11v8h14v-8"/></svg><span>Partager</span></button>
+      <button data-x="like" aria-label="J'aime" class="{{ userLiked ? 'active' : '' }}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5 1.1-1.1a5.5 5.5 0 0 0 0-7.8Z"/></svg><span id="likesCount">{{ likesCount }}</span></button>
+      <span aria-label="{{ article.viewCount }} vues"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>{{ article.viewCount }} vue{{ article.viewCount > 1 ? 's' }}</span>
     </div>
 
     <p class="x-foot">
@@ -59,20 +58,6 @@
     <div style="flex:1;min-width:0"><strong>{{ article.source.name }}</strong><p>La source est indiquée pour vous permettre de vérifier le contexte. Un lien retrouvé ou un flux de presse ne garantit pas l’exactitude des faits.</p></div>
     {% if article.sourceUrl %}<a class="source-link" href="{{ article.sourceUrl }}" target="_blank" rel="noopener">Source →</a>{% endif %}
   </div>
-
-  <section class="comments" id="comments" data-article="{{ article.id }}" aria-label="Commentaires">
-    <h2>Commentaires (<span id="commentsTotal">{{ commentsCount }}</span>)</h2>
-    {% if app.user %}<form id="commentForm">
-      <label class="visually-hidden" for="commentInput">Votre commentaire</label>
-      <textarea id="commentInput" maxlength="500" rows="3" placeholder="Donnez votre avis sur cette info… (500 lettres max)"></textarea>
-      <button class="save-preferences" type="submit" style="width:auto;padding:9px 18px">Publier</button>
-    </form>{% else %}<p><a class="source-link" href="{{ path('app_login') }}">Connectez-vous pour commenter →</a></p>{% endif %}
-    {% if commentsCount > 0 %}
-    <button class="text-button comments-toggle" id="commentsToggle" aria-expanded="false" aria-controls="commentList">Voir les {{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}</button>
-    {% endif %}
-    <p class="live-status" id="commentsStatus" hidden></p>
-    <div id="commentList"{% if commentsCount > 0 %} hidden{% endif %}></div>
-  </section>
 
   {% if related|length > 0 %}
   <h2 style="margin-top:28px">À lire aussi</h2>

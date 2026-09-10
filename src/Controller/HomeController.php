@@ -62,8 +62,8 @@ class HomeController extends AbstractController
             'result' => $result, 'activeTopic' => $topic, 'activeZone' => $zone, 'query' => $query,
             'explore' => $explore, 'includeDemo' => $demo, 'todayLabel' => $date,
             'sourceList' => $sources->findWithWebsite(),
-            'latestArticle' => $articles->findOneBy(['isDemo' => false], ['createdAt' => 'DESC']),
-            'demoCount' => $articles->count(['isDemo' => true]),
+            'latestArticle' => $articles->findLatestCovered(),
+            'demoCount' => $articles->countCovered(true) - $articles->countCovered(),
             'filters' => array_filter(['topic' => $topic, 'zone' => $zone, 'q' => $query, 'view' => $explore ? 'all' : '', 'demo' => $demo ? 1 : '']),
         ]);
     }

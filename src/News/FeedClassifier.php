@@ -54,6 +54,15 @@ final class FeedClassifier
     public static function placeFor(string $title, string $default): string
     {
         $text = self::normalize($title);
+        foreach (self::REUNION_KEYWORDS as $keyword) {
+            if (self::containsWord($text, $keyword)) {
+                return 'La Réunion';
+            }
+        }
+        // La zone décrit désormais la couverture du flux : uniquement Réunion ou France.
+        if (in_array($default, ['La Réunion', 'France'], true)) {
+            return $default;
+        }
         foreach (self::PLACE_KEYWORDS as $place => $keywords) {
             foreach ($keywords as $keyword) {
                 if (self::containsWord($text, $keyword)) {
@@ -61,14 +70,7 @@ final class FeedClassifier
                 }
             }
         }
-        // Mention explicite de La Réunion : prioritaire (sauf flux déjà réunionnais, qui le reste).
-        foreach (self::REUNION_KEYWORDS as $keyword) {
-            if (self::containsWord($text, $keyword)) {
-                return 'La Réunion';
-            }
-        }
-
-        return $default;
+        return 'France';
     }
 
     public static function normalize(string $text): string

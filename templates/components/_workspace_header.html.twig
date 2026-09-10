@@ -1,5 +1,20 @@
 <header class="workspace-header">
+  <button class="workspace-menu-button mobile-menu" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true">☰</span></button>
   <a class="workspace-brand" href="{{ path('app_home') }}">Info<span>Trak</span><small>.re</small></a>
   <nav aria-label="Navigation principale"><a href="{{ path('app_home') }}">Le fil</a><a href="{{ path('app_communities') }}" {{ active == 'communities' ? 'aria-current="page"' }}>Communautés</a><a href="{{ path('app_infotrak') }}" {{ active == 'dashboard' ? 'aria-current="page"' }}>En chiffres</a></nav>
   <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème clair ou sombre">◐</button>
 </header>
+<aside class="sidebar workspace-sidebar" id="sidebar" aria-label="Menu InfoTrak">
+  <button class="workspace-drawer-close" type="button" aria-label="Fermer le menu">×</button>
+  <a class="brand" href="{{ path('app_home') }}"><span>Info<span>Trak</span><small>.re</small></span></a>
+  <p class="section-label">NAVIGATION</p>
+  <nav>
+    <a class="nav-item" href="{{ path('app_home') }}"><span class="nav-icon" aria-hidden="true">⌂</span>Le fil</a>
+    <a class="nav-item {{ active == 'communities' ? 'active' }}" href="{{ path('app_communities') }}"><span class="nav-icon" aria-hidden="true">#</span>Communautés</a>
+    <a class="nav-item {{ active == 'dashboard' ? 'active' }}" href="{{ path('app_infotrak') }}"><span class="nav-icon" aria-hidden="true">▥</span>En chiffres</a>
+    <a class="nav-item" href="{{ path('app_push') }}"><span class="nav-icon" aria-hidden="true">♧</span>Notifications téléphone</a>
+  </nav>
+  <p class="section-label workspace-sidebar-section">ZONES COUVERTES</p>
+  <nav><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'La Réunion'}) }}">La Réunion</a><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'France'}) }}">France</a></nav>
+</aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>

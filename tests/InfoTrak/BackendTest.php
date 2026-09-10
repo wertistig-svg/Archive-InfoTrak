@@ -89,8 +89,8 @@ class BackendTest extends WebTestCase
     {
         $client = $this->createAuthenticatedClient();
         $client->request('POST', '/preferences', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
-            'topics' => ['La Réunion', 'Chine'],
-            'zones' => ['La Réunion', 'Chine'],
+            'topics' => ['La Réunion', 'Cybersécurité'],
+            'zones' => ['La Réunion', 'France', 'Chine'],
             'frequency' => 'live',
         ]));
 
@@ -98,6 +98,7 @@ class BackendTest extends WebTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertTrue($data['ok']);
         $this->assertContains('La Réunion', $data['topics']);
+        $this->assertSame(['La Réunion', 'France'], $data['zones']);
 
         $client->request('GET', '/api/notifications');
         $this->assertResponseIsSuccessful();
@@ -133,6 +134,8 @@ class BackendTest extends WebTestCase
         // Encart source fiable + articles liés.
         $this->assertSelectorExists('.source-trust');
         $this->assertSelectorExists('.related-list');
+        $this->assertSelectorNotExists('.comments');
+        $this->assertSelectorNotExists('[data-x="comments"]');
     }
 
     public function testDashboardShowsStatsMovedOutOfHome(): void
@@ -152,5 +155,7 @@ class BackendTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'en chiffres');
         $this->assertSelectorCount(4, '.dashboard-metric');
         $this->assertSelectorTextContains('.dashboard-note', 'exemples de test sont exclus');
+        $this->assertSelectorExists('.mobile-menu[aria-controls="sidebar"]');
+        $this->assertSelectorExists('#sidebar');
     }
 }

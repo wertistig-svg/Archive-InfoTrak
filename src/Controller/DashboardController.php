@@ -14,7 +14,7 @@ class DashboardController extends AbstractController
     #[Route('/infotrak', name: 'app_infotrak')]
     public function index(ArticleRepository $articles, NotificationRepository $notifications): Response
     {
-        $total = $articles->count(['isDemo' => false]);
+        $total = $articles->countCovered();
         $now = new \DateTimeImmutable();
 
         return $this->render('infotrak/dashboard.html.twig', [
@@ -22,9 +22,9 @@ class DashboardController extends AbstractController
             'byCategory' => $articles->countByCategory(false),
             'byPlace' => $articles->countByPlace(false),
             'stats' => $articles->collectionStats($now->modify('-7 days'), $now),
-            'latestArticle' => $articles->findOneBy(['isDemo' => false], ['createdAt' => 'DESC']),
+            'latestArticle' => $articles->findLatestCovered(),
             'unreadCount' => $this->getUser() ? $notifications->countUnread($this->getUser()->getUserIdentifier()) : 0,
-            'demoCount' => $articles->count(['isDemo' => true]),
+            'demoCount' => $articles->countCovered(true) - $total,
         ]);
     }
 }

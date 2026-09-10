@@ -48,11 +48,10 @@ class FeedClassifierTest extends TestCase
         $this->assertSame('La Réunion', FeedClassifier::placeFor('Leptospirose : un décès à Saint-Denis - Zinfos974', 'France'));
     }
 
-    public function testSpecificZonesWin(): void
+    public function testNationalFeedsStayInFrance(): void
     {
-        $this->assertSame('Chine', FeedClassifier::placeFor('Sommet sino-européen sur l’IA à Shanghai', 'France'));
-        $this->assertSame('Asie', FeedClassifier::placeFor('Câbles sous-marins entre Singapour et Jakarta', 'France'));
-        // « indépendants » ne doit pas déclencher l’Inde/Asie.
+        $this->assertSame('France', FeedClassifier::placeFor('Sommet sino-européen sur l’IA à Shanghai', 'France'));
+        $this->assertSame('France', FeedClassifier::placeFor('Câbles sous-marins entre Singapour et Jakarta', 'France'));
         $this->assertSame('France', FeedClassifier::placeFor('Les studios indépendants français en force', 'France'));
     }
 

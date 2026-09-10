@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Article;
+use App\InfoTrak\Catalog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,7 +18,8 @@ class ArticleRepository extends ServiceEntityRepository
     /** Filtres et exclusions appliqués avant la pagination. */
     public function feedPage(array $topics, array $zones, array $excludedIds, string $query, int $page, bool $includeDemo = false): array
     {
-        $qb = $this->createQueryBuilder('a')->join('a.source', 's');
+        $qb = $this->createQueryBuilder('a')->join('a.source', 's')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES);
         if ($topics) { $qb->andWhere('a.category IN (:topics)')->setParameter('topics', $topics); }
         if ($zones) { $qb->andWhere('a.place IN (:zones)')->setParameter('zones', $zones); }
         if ($excludedIds) { $qb->andWhere('a.id NOT IN (:excluded)')->setParameter('excluded', $excludedIds); }
@@ -42,6 +44,7 @@ class ArticleRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('a')
             ->addSelect('s')
             ->join('a.source', 's')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->orderBy('a.publishedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
@@ -54,6 +57,7 @@ class ArticleRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('a')
             ->addSelect('s')
             ->join('a.source', 's')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->orderBy('a.publishedAt', 'DESC')
             ->setMaxResults($limit);
 
@@ -77,6 +81,7 @@ class ArticleRepository extends ServiceEntityRepository
             ->addSelect('s')
             ->join('a.source', 's')
             ->andWhere('a.category = :category')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->andWhere('a.isDemo = false')
             ->setParameter('category', $category)
             ->andWhere('a.id != :id')
@@ -91,6 +96,7 @@ class ArticleRepository extends ServiceEntityRepository
     {
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -99,6 +105,7 @@ class ArticleRepository extends ServiceEntityRepository
     {
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->andWhere('a.isVerified = :verified')
             ->setParameter('verified', true)
             ->getQuery()
@@ -122,6 +129,7 @@ class ArticleRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('a')
             ->select(sprintf('a.%s AS label, COUNT(a.id) AS total', $field))
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
             ->groupBy(sprintf('a.%s', $field))
             ->orderBy('total', 'DESC');
         if (!$includeDemo) { $qb->andWhere('a.isDemo = false'); }
@@ -139,7 +147,7 @@ class ArticleRepository extends ServiceEntityRepository
     public function socialWindow(\DateTimeImmutable $since, \DateTimeImmutable $until, array $excludedIds = []): array
     {
         $qb = $this->createQueryBuilder('a')->addSelect('s')->join('a.source', 's')
-            ->andWhere('a.isDemo = false')->andWhere('s.type = :type')->setParameter('type', 'social')
+            ->andWhere('a.isDemo = false')->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)->andWhere('s.type = :type')->setParameter('type', 'social')
             ->andWhere('a.publishedAt >= :since AND a.publishedAt <= :until')->setParameter('since', $since)->setParameter('until', $until)
             ->orderBy('a.publishedAt', 'DESC')->addOrderBy('a.id', 'DESC')->setMaxResults(1000);
         if ($excludedIds) { $qb->andWhere('a.id NOT IN (:excluded)')->setParameter('excluded', $excludedIds); }
@@ -148,10 +156,25 @@ class ArticleRepository extends ServiceEntityRepository
 
     public function collectionStats(\DateTimeImmutable $since, \DateTimeImmutable $until): array
     {
-        $base = $this->createQueryBuilder('a')->where('a.isDemo = false');
+        $base = $this->createQueryBuilder('a')->where('a.isDemo = false')->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES);
         $sources = (int) (clone $base)->select('COUNT(DISTINCT a.source)')->getQuery()->getSingleScalarResult();
         $recent = (int) (clone $base)->select('COUNT(a.id)')->andWhere('a.publishedAt BETWEEN :since AND :until')
             ->setParameter('since', $since)->setParameter('until', $until)->getQuery()->getSingleScalarResult();
         return ['sources' => $sources, 'recent' => $recent];
+    }
+
+    public function countCovered(bool $includeDemo = false): int
+    {
+        $qb = $this->createQueryBuilder('a')->select('COUNT(a.id)')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES);
+        if (!$includeDemo) { $qb->andWhere('a.isDemo = false'); }
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function findLatestCovered(): ?Article
+    {
+        return $this->createQueryBuilder('a')->andWhere('a.isDemo = false')
+            ->andWhere('a.place IN (:coveredZones)')->setParameter('coveredZones', Catalog::ZONES)
+            ->orderBy('a.createdAt', 'DESC')->setMaxResults(1)->getQuery()->getOneOrNullResult();
     }
 }

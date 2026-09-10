@@ -8,7 +8,7 @@ final class Catalog
     public const TOPICS = ['La Réunion', 'Cybersécurité', 'Emploi', 'Jeux', 'Environnement', 'Tech & IA', 'Sciences', 'Santé', 'Sport', 'Cinéma & séries', 'Musique', 'Économie', 'Politique', 'Streaming & créateurs', 'Solidarité', 'Société'];
 
     /** @var string[] */
-    public const ZONES = ['La Réunion', 'France', 'Chine', 'Asie', 'Japon', 'International'];
+    public const ZONES = ['La Réunion', 'France'];
 
     private function __construct() {}
 }

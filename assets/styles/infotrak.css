@@ -156,3 +156,7 @@ body.light .x-topbar{background:rgba(233,237,241,.88)}body.light .x-topbar stron
 .comment{border-bottom:0;padding:14px 2px}.comments h2{margin:28px 0 6px}.comments-toggle{margin:12px 0 2px}
 .feed-item{padding:16px 6px}.feed-list,.feed-item{border-color:rgba(255,255,255,.07)}.notif-item{border-top:1px solid rgba(255,255,255,.07)}
 .article-page{padding:24px 20px 80px}.related-list{gap:10px}.related-list a{padding:12px 14px}
+
+/* Icônes vectorielles sobres et article confortable sur mobile. */
+.x-actions svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.x-actions>span{display:flex;align-items:center;gap:7px;padding:6px 10px}.x-actions button.active svg{fill:currentColor}
+@media(max-width:760px){.article-page{padding:12px 18px 56px;max-width:100%;overflow-x:hidden}.x-topbar{margin:0 -4px 18px;padding:8px 4px}.x-head{align-items:flex-start}.x-head>div{min-width:0}.x-handle{display:block;line-height:1.55;overflow-wrap:anywhere}.x-title{font-size:clamp(26px,8vw,34px)!important;line-height:1.22!important;letter-spacing:-.7px!important;overflow-wrap:anywhere;text-wrap:pretty}.x-text{font-size:17px!important;line-height:1.72!important;overflow-wrap:anywhere}.x-actions{gap:8px;justify-content:flex-start}.x-actions>span{margin-left:auto}.source-trust{display:block;padding:18px}.source-trust .source-link{display:inline-block;margin:12px 0 0}.related-list a{font-size:14px;line-height:1.55}}

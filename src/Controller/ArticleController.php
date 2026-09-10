@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Repository\ArticleFeedbackRepository;
 use App\Repository\ArticleRepository;
-use App\Repository\CommentRepository;
+use App\InfoTrak\Catalog;
 use App\Service\ReaderIdentity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,13 +18,15 @@ class ArticleController extends AbstractController
         string $slug,
         ArticleRepository $articles,
         ArticleFeedbackRepository $feedbacks,
-        CommentRepository $comments,
         EntityManagerInterface $em,
         ReaderIdentity $reader,
     ): Response {
         $article = $articles->findOneBy(['slug' => $slug]);
         if (null === $article) {
             throw $this->createNotFoundException('Article introuvable.');
+        }
+        if (!in_array($article->getPlace(), Catalog::ZONES, true)) {
+            throw $this->createNotFoundException('Cette actualité ne fait pas partie de la couverture InfoTrak.');
         }
 
         $article->incrementViews();
@@ -37,7 +39,6 @@ class ArticleController extends AbstractController
             'article' => $article,
             'related' => $articles->findRelated($article->getCategory(), $article->getId(), 3),
             'likesCount' => $feedbacks->countInterested($article->getId()),
-            'commentsCount' => $comments->countForArticle($article),
             'userLiked' => null !== $vote && $vote->isInterested(),
         ]);
     }
