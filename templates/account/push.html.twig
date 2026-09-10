@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% block title %}Notifications sur téléphone — InfoTrak{% endblock %}
+{% block javascripts %}{{ importmap(['app', 'infotrak']) }}{% endblock %}
+{% block body %}
+{% include 'components/_workspace_header.html.twig' with {active:'push'} %}
+<main class="push-page" data-push-page>
+  <p class="eyebrow">VOS SUJETS, À PORTÉE DE MAIN</p>
+  <h1>L’actualité vient à vous.</h1>
+  <p>Recevez les nouveaux articles sur cet appareil, même quand la page est fermée. Vous gardez le contrôle.</p>
+  <section class="push-card"><h2>1. Choisissez vos actualités</h2><p>Les notifications utilisent les sujets, les zones et le rythme enregistrés dans vos préférences. Les articles masqués et les exemples sont exclus.</p><a href="{{ path('app_home') }}#preferences">Choisir mes sujets →</a></section>
+  <section class="push-card">
+    <h2>2. Activez cet appareil</h2>
+    <p>Sur iPhone ou iPad : dans Safari, touchez Partager, puis « Sur l’écran d’accueil ». Ouvrez InfoTrak depuis cette icône avant d’activer les notifications (iOS 16.4 minimum).</p>
+    <p>Sur Android : ouvrez le site dans Chrome. Vous pouvez aussi l’installer depuis le menu du navigateur.</p>
+    <div class="push-actions"><button id="pushEnable" type="button">Activer les notifications</button><button id="pushTest" type="button" hidden>Envoyer un essai</button><button id="pushDisable" type="button" hidden>Désactiver sur cet appareil</button></div>
+    <p id="pushStatus" role="status" aria-live="polite">Vérification de la compatibilité…</p>
+  </section>
+  <section class="push-card"><h2>Un rythme raisonnable</h2><p>Les nouveaux articles sont regroupés : au maximum une notification par heure. Aucun ancien article n’est envoyé lors de l’activation.</p><p>L’hébergement de test peut se mettre en veille. La collecte et les envois reprennent quand le serveur est actif ; les alertes ne sont pas garanties en continu.</p><p>Vous pouvez arrêter les notifications ici ou dans les réglages du téléphone. {% if not app.user %}Sans compte, les préférences appartiennent à cette session de navigation.{% endif %}</p></section>
+</main>
+{% endblock %}

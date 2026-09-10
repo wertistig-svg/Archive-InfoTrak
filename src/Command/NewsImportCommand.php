@@ -15,6 +15,7 @@ class NewsImportCommand extends Command
 {
     public function __construct(
         private readonly NewsImportService $import,
+        private readonly \Doctrine\DBAL\Connection $db,
     ) {
         parent::__construct();
     }
@@ -34,12 +35,18 @@ class NewsImportCommand extends Command
         $feed = $input->getOption('feed');
         $limit = max(1, (int) $input->getOption('limit'));
 
+        if (!$this->db->fetchOne('SELECT pg_try_advisory_lock(974202610)')) {
+            $io->note('Une collecte est déjà en cours.');
+            return Command::SUCCESS;
+        }
         try {
             $stats = $this->import->import($feed, $limit, (bool) $input->getOption('dry-run'));
         } catch (\Throwable $e) {
             $io->error('Import impossible : '.$e->getMessage());
 
             return Command::FAILURE;
+        } finally {
+            $this->db->fetchOne('SELECT pg_advisory_unlock(974202610)');
         }
 
         foreach ($stats['feeds'] as $feedName => $created) {

@@ -19,4 +19,5 @@ php bin/console cache:clear --env=prod --no-debug
 php bin/console app:seed --env=prod --no-debug
 # Startup commands run as root; Apache must be able to write the generated cache.
 chown -R www-data:www-data var
+su -s /bin/sh www-data -c '/bin/sh /var/www/html/docker/collect.sh' &
 exec apache2-foreground

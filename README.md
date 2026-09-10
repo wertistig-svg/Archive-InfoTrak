@@ -1,4 +1,16 @@
-# InfoTrak.re — bêta locale
+# InfoTrak.re — bêta publique
+
+Site de test : https://infotrak-re.onrender.com/
+
+### Actualités et notifications sur téléphone (10 septembre 2026)
+
+Le conteneur lance une collecte RSS à son démarrage puis toutes les 15 minutes tant qu’il est actif. Les imports sont dédupliqués ; un verrou PostgreSQL empêche deux collectes simultanées. Une source indisponible ne bloque pas les autres. Sur l’offre gratuite Render, la mise en veille interrompt cette boucle : un hébergement toujours actif est nécessaire pour des alertes continues.
+
+La page `/notifications-telephone` permet une activation volontaire, un essai et une désactivation sur chaque appareil. Web Push utilise une clé VAPID persistante, chiffrée dans PostgreSQL avec `APP_SECRET` (conserver ce secret lors des redéploiements). Les destinations sont limitées aux services push des navigateurs, les écritures sont protégées par CSRF et les abonnements isolés par compte ou session. `app:push:dispatch` regroupe les nouveaux articles correspondant aux préférences, hors démonstrations et articles masqués, au maximum une fois par heure et par appareil. Les abonnements expirés sont supprimés. Les publications de plus de 24 heures et les articles déjà présents à l’activation ne sont pas envoyés. Les erreurs temporaires sont réessayées au passage suivant.
+
+Sur iPhone/iPad (iOS 16.4+), ajouter le site à l’écran d’accueil et l’ouvrir depuis cette icône avant l’activation. Sur Android, utiliser un navigateur compatible comme Chrome. La réception sur un vrai téléphone doit être vérifiée avec « Envoyer un essai » ; une réponse positive du fournisseur push ne garantit pas l’affichage si les réglages du téléphone le bloquent.
+
+La connexion Google utilise `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` et l’URI exacte `https://infotrak-re.onrender.com/connect/google/check` autorisée dans Google Cloud. Les en-têtes HTTPS du proxy privé sont pris en compte. Aucun secret n’est versionné.
 
 Application PHP/Symfony pour consulter les actualités de La Réunion et d’ailleurs, retrouver leurs sources et personnaliser son fil. Cette version reprend le projet existant et prépare les essais avant publication.
 
@@ -22,7 +34,7 @@ php bin/console doctrine:migrations:migrate --no-interaction
 symfony serve --port=8000
 ```
 
-Ouvrir [InfoTrak en local](http://127.0.0.1:8000/). Sans la CLI Symfony, utiliser `php -S 127.0.0.1:8000 -t public`. Ces serveurs sont destinés au développement. Pour Google, conserver exactement `http://127.0.0.1:8000/connect/google/check` parmi les URI autorisées. Aucun déploiement public n’a été effectué pendant cette reprise.
+Ouvrir [InfoTrak en local](http://127.0.0.1:8000/). Sans la CLI Symfony, utiliser `php -S 127.0.0.1:8000 -t public`. Ces serveurs sont destinés au développement. Pour Google, conserver exactement `http://127.0.0.1:8000/connect/google/check` parmi les URI autorisées. Le déploiement public utilise Render.
 
 L’interface utilise une police sans empattements (Arial / Helvetica / système), proche de la lecture sur X, sans téléchargement de police externe. Les anciennes polices ne sont plus chargées.
 
@@ -30,7 +42,7 @@ Agent Reach est disponible pour les essais locaux de collecte : voir [installati
 
 ## Données
 
-Le fil utilise les articles déjà présents dans la base. Il ne lance pas un import à chaque affichage. La date de dernier ajout et la mention « actualisation manuelle » permettent de connaître son état.
+Le fil utilise les articles déjà présents dans la base. Il ne lance pas un import à chaque affichage. La date de dernier ajout et la mention de collecte régulière permettent de connaître son état.
 
 ```powershell
 # Simuler un import, puis importer un flux configuré.
@@ -55,7 +67,7 @@ L’import existant comprend des flux de presse, Google News, Reddit et Mastodon
 - Connexion Google existante ; préférences liées au compte pour les personnes connectées.
 - Filtres cumulables et pagination sur l’ensemble de la base, avec 12 articles par page.
 - Intérêt enregistré et masquage persistant ; aucune réintroduction automatique quand le fil est vide.
-- Notifications dans l’application, privées par compte, préparées à l’ouverture du panneau et à l’enregistrement des préférences. Aucun envoi par e-mail ou push n’est réalisé par cette version.
+- Notifications dans l’application, privées par compte, préparées à l’ouverture du panneau et à l’enregistrement des préférences. L’envoi sur téléphone est disponible via une activation séparée ; aucun envoi par e-mail.
 - Lecture des commentaires publique ; publication et suppression réservées aux comptes connectés.
 - Lecteurs vidéo existants conservés. Aucun exemple vidéo sans rapport n’a été ajouté.
 - Interface adaptée au mobile, thèmes clair et sombre, menu et fenêtre de préférences accessibles au clavier.
@@ -118,7 +130,7 @@ Essais manuels utiles : ouvrir un article puis revenir au fil ; utiliser ensuite
 
 La migration `Version20260907103853` ajoute l’identification des démonstrations et le propriétaire des notifications. Les anciennes notifications ne possédant pas de destinataire fiable restent conservées avec une clé `legacy-*` et ne sont montrées à aucun compte. Elles ne sont pas attribuées arbitrairement au prochain utilisateur.
 
-Une copie des sources avant reprise se trouve dans `.snapshots/codex-before-20260907.zip`. Ce fichier n’est pas une sauvegarde de PostgreSQL et n’inclut pas les secrets `.env.local`. Le dossier `.snapshots` est exclu de Git. Aucun commit ni publication du dépôt n’a été réalisé.
+Une copie des sources avant reprise se trouve dans `.snapshots/codex-before-20260907.zip`. Ce fichier n’est pas une sauvegarde de PostgreSQL et n’inclut pas les secrets `.env.local`. Le dossier `.snapshots` est exclu de Git. Le dépôt GitHub alimente le déploiement Render.
 
 ## Suite
 
@@ -128,4 +140,4 @@ Le projet contient un `Dockerfile` et un Blueprint `render.yaml` prêts pour Ren
 
 Pour lancer la mise en ligne, ouvrir [le tableau de bord Blueprint de Render](https://dashboard.render.com/blueprints), connecter GitHub et sélectionner ce dépôt. La consultation publique fonctionne sans connexion Google. Pour activer la connexion, ajouter `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` dans les variables secrètes Render, puis déclarer `https://infotrak-re.onrender.com/connect/google/check` comme URI de redirection dans Google Cloud.
 
-Voir [la feuille de route](docs/FEUILLE_DE_ROUTE.md). Les fonctionnalités IA, les intégrations sociales supplémentaires, le résumé quotidien, les notifications push et l’installation mobile restent à développer ou à valider. Le code est distribué sous licence MIT ; les contributeurs doivent toutefois vérifier séparément les droits associés aux contenus agrégés.
+Voir [la feuille de route](docs/FEUILLE_DE_ROUTE.md). Les fonctionnalités IA, les intégrations sociales supplémentaires, le résumé quotidien, la réception push sur appareils physiques et l’installation mobile restent à valider. Le code est distribué sous licence MIT ; les contributeurs doivent toutefois vérifier séparément les droits associés aux contenus agrégés.

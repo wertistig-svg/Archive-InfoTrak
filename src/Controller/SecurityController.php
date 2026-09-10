@@ -30,7 +30,7 @@ class SecurityController extends AbstractController
     public function connect(ClientRegistry $clients): Response
     {
         try {
-            return $clients->getClient('google')->redirect();
+            return $clients->getClient('google')->redirect(['openid', 'email', 'profile']);
         } catch (\Throwable) {
             $this->addFlash('error', 'Google n’est pas configuré : renseignez GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET.');
 

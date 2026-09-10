@@ -695,3 +695,5 @@ function initInfotrak() {
 
 initInfotrak();
 document.addEventListener('turbo:load', initInfotrak);
+
+document.addEventListener('turbo:load', () => { if (location.hash === '#preferences') document.querySelector('#preferencesModal')?.showModal(); });
