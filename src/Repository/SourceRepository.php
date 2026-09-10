@@ -20,7 +20,7 @@ class SourceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('s')->distinct()->innerJoin('s.articles', 'a')
             ->where('s.websiteUrl IS NOT NULL')->andWhere("s.websiteUrl != ''")
-            ->andWhere('a.isDemo = false')->andWhere('a.place IN (:coveredZones)')
+            ->andWhere('a.place IN (:coveredZones)')
             ->setParameter('coveredZones', Catalog::ZONES)
             ->orderBy('s.name', 'ASC')->getQuery()->getResult();
     }
