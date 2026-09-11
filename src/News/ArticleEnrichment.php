@@ -71,6 +71,8 @@ final class ArticleEnrichment
 
     private function linfoLink(string $title): ?string
     {
+        $sitemapLink = LinfoSitemap::findLink($this->fetch('https://www.linfo.re/sitemap-news.xml'), $title);
+        if ($sitemapLink) { return $sitemapLink; }
         $wanted = trim(FeedClassifier::normalize(NewsBrief::title($title, 'Linfo.re')));
         foreach (['https://www.linfo.re/la-reunion', 'https://www.linfo.re/france'] as $index) {
             $html = $this->fetch($index);

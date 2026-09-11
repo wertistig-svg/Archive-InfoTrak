@@ -15,6 +15,20 @@ class ArticleRepository extends ServiceEntityRepository
         parent::__construct($registry, Article::class);
     }
 
+    public function findTraffic(): array
+    {
+        $qb = $this->createQueryBuilder('a')->addSelect('s')->join('a.source', 's')
+            ->where('a.place = :zone')->setParameter('zone', 'La Réunion')->andWhere('a.isDemo = false')
+            ->andWhere('s.type != :social')->setParameter('social', 'social')
+            ->andWhere('a.publishedAt >= :since')->setParameter('since', new \DateTimeImmutable('-7 days'));
+        $conditions = ['a.category = :traffic']; $qb->setParameter('traffic', 'La Circulation');
+        foreach (['accident','collision','route','circulation','embouteillage','bouchon','choc frontal','motard'] as $i=>$term) {
+            $conditions[] = 'LOWER(a.title) LIKE :term'.$i; $qb->setParameter('term'.$i, '%'.$term.'%');
+        }
+        $items = $qb->andWhere(implode(' OR ', $conditions))->orderBy('a.publishedAt','DESC')->setMaxResults(120)->getQuery()->getResult();
+        return array_values(array_filter($items, static fn (Article $a) => \App\News\TrafficInfo::isTraffic($a->getTitle())));
+    }
+
     /** Filtres et exclusions appliqués avant la pagination. */
     public function feedPage(array $topics, array $zones, array $excludedIds, string $query, int $page, bool $includeDemo = false): array
     {

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% block title %}La Circulation à La Réunion — InfoTrak.re{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}">{% endblock %}
+{% block javascripts %}{{ importmap(['app', 'infotrak']) }}{% endblock %}
+{% block body %}
+{% include 'components/_workspace_header.html.twig' with {active:'traffic'} %}
+<main class="workspace-page discovery-page">
+  <section class="workspace-heading"><div><p class="workspace-kicker">SUR LES ROUTES DE LA RÉUNION</p><h1>La Circulation<span>.</span></h1><p>Accidents, embouteillages et travaux : comprendre ce qui se passe près de chez vous.</p></div></section>
+  <aside class="discovery-notice"><strong>Avant de prendre la route</strong><p>Les articles ci-dessous couvrent les sept derniers jours. Un incident publié peut être terminé : ils ne décrivent pas l’état du trafic en temps réel.</p><a href="https://www.infotrafic.re/fr" target="_blank" rel="noopener noreferrer">Consulter Info Trafic Réunion · CRGT ↗</a></aside>
+  <nav class="community-shortcuts" aria-label="Types d’informations routières"><a href="{{ path('app_traffic') }}" {{ not kind ? 'aria-current="page"' }}>Tout voir</a>{% for label in ['Accident','Embouteillages','Travaux','Circulation'] %}<a href="{{ path('app_traffic', {type:label}) }}" {{ kind == label ? 'aria-current="page"' }}>{{ label }}</a>{% endfor %}</nav>
+  <p>{{ total }} article{{ total != 1 ? 's' }} · 7 derniers jours</p>
+  <div class="discovery-grid traffic-grid">
+  {% for report in reports %}{% set a = report.article %}
+    <article class="discovery-card"><span class="discovery-label">{{ report.kind }}</span><p class="traffic-place">{{ report.where }}</p><h2><a href="{{ path('app_article_show', {slug:a.slug}) }}">{{ a.displayTitle }}</a></h2><p class="discovery-meta">{{ a.source.name }} · Publié le <time datetime="{{ a.publishedAt|date('c') }}">{{ a.publishedAt|date('d/m à H:i', 'Indian/Reunion') }}</time></p>{% if a.readingSummary %}<p>{{ a.readingSummary }}</p>{% endif %}<div class="traffic-cause"><strong>Cause ou contexte indiqué</strong><p>{{ report.cause }}</p></div><a class="read-brief" href="{{ path('app_article_show', {slug:a.slug}) }}">Voir l’essentiel →</a></article>
+  {% else %}<section class="discovery-card"><h2>Aucun article pour cette sélection</h2><p>Cela ne signifie pas que les routes sont dégagées. Consultez Info Trafic Réunion pour préparer votre trajet.</p></section>{% endfor %}
+  </div>
+  {% if pages > 1 %}<nav class="pagination" aria-label="Pages des informations routières">{% if page > 1 %}<a href="{{ path('app_traffic', {type:kind,page:page-1}) }}">← Précédente</a>{% endif %}<span>{{ page }} / {{ pages }}</span>{% if page < pages %}<a href="{{ path('app_traffic', {type:kind,page:page+1}) }}">Suivante →</a>{% endif %}</nav>{% endif %}
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}

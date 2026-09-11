@@ -23,6 +23,7 @@
     <a class="nav-item {{ active == 'communities' ? 'active' }}" href="{{ path('app_communities') }}">{% include 'components/_icon.html.twig' with {name:'community'} %}Communautés</a>
     <a class="nav-item {{ active == 'dashboard' ? 'active' }}" href="{{ path('app_infotrak') }}">{% include 'components/_icon.html.twig' with {name:'chart'} %}En chiffres</a>
   </nav>
+  <nav><a class="nav-item" href="{{ path('app_traffic') }}">{% include 'components/_icon.html.twig' with {name:'traffic'} %}La Circulation</a><a class="nav-item" href="{{ path('app_sources') }}">{% include 'components/_icon.html.twig' with {name:'sources'} %}Les sources</a></nav>
   <p class="section-label workspace-sidebar-section">ZONES COUVERTES</p>
   <nav><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'La Réunion'}) }}">La Réunion</a><a class="nav-item" href="{{ path('app_home', {view:'all', zone:'France'}) }}">France</a></nav>
 </aside>

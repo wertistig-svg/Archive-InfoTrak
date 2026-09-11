@@ -19,7 +19,7 @@
 
   <article class="x-post">
     <div class="x-head">
-      <span class="avatar x-avatar">{{ article.source.name|slice(0, 1) }}{% if article.sourceHost %}<img class="favicon" src="https://www.google.com/s2/favicons?domain={{ article.sourceHost }}&sz=128" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />{% endif %}</span>
+      <span class="avatar x-avatar">{{ article.source.name|slice(0, 1) }}{% if article.publisherLogo %}<img class="favicon publisher-logo" src="{{ article.publisherLogo }}" alt="{{ article.source.name }}">{% elseif article.sourceHost %}<img class="favicon" src="https://www.google.com/s2/favicons?domain={{ article.sourceHost }}&sz=128" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />{% endif %}</span>
       <div>
         <strong>{{ article.source.name }}</strong><br />
         <small class="x-handle">{{ article.publishedAt|date('d/m/Y à H:i', 'Indian/Reunion') }} · {{ article.place }}{% if article.category != article.place %} · {{ article.category }}{% endif %}</small>

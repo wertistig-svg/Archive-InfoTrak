@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block title %}Les sources — InfoTrak.re{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset('styles/infotrak.css') }}">{% endblock %}
+{% block javascripts %}{{ importmap(['app', 'infotrak']) }}{% endblock %}
+{% block body %}
+{% include 'components/_workspace_header.html.twig' with {active:'sources'} %}
+<main class="workspace-page discovery-page">
+<section class="workspace-heading"><div><p class="workspace-kicker">LE CARNET DE SOURCES</p><h1>À la source<span>.</span></h1><p>Les médias et organismes à retrouver pour La Réunion et la France.</p></div></section>
+<nav class="community-shortcuts" aria-label="Familles de sources">{% for key,label in groups %}<a href="#{{ key }}">{{ label }}</a>{% endfor %}</nav>
+{% for key,label in groups %}<section class="publisher-group" id="{{ key }}"><h2>{{ label }}</h2>{% if key == 'emploi' %}<p>Consultez les offres sur ces plateformes. Elles ne sont pas importées automatiquement dans le fil.</p>{% endif %}<div class="discovery-grid">
+{% for s in sources %}{% if s.group == key %}<article class="discovery-card"><span class="discovery-label">{{ s.zone }}</span><h3>{{ s.name }}</h3>{% if s.mode == 'portal' %}<p>À consulter sur le site officiel.</p>{% else %}<p>{{ s.mode == 'search' ? 'Repérage via Google Actualités' : (s.mode == 'sitemap' ? 'Articles repérés directement chez l’éditeur' : 'Flux public') }}</p><p class="discovery-meta">{{ counts[s.url] ?? 0 }} article(s) collecté(s)</p>{% endif %}<a href="{{ s.url }}" target="_blank" rel="noopener noreferrer">{{ key == 'emploi' ? 'Consulter les offres' : 'Ouvrir la source' }} ↗</a></article>{% endif %}{% endfor %}
+</div></section>{% endfor %}
+<section class="publisher-group"><h2>Et vos autres sujets</h2><nav class="community-shortcuts">{% for topic in ['Sport','Jeux','Tech & IA','Économie','Cinéma & séries','Musique'] %}<a href="{{ path('app_home',{view:'all',topic:topic}) }}">{{ topic }}</a>{% endfor %}</nav></section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}

@@ -36,6 +36,7 @@ final class FeedClassifier
 
     public static function categoryFor(string $title, string $default): string
     {
+        if (TrafficInfo::isTraffic($title)) { return 'La Circulation'; }
         $text = self::normalize($title);
         foreach (self::CATEGORY_KEYWORDS as $category => $keywords) {
             foreach ($keywords as $keyword) {

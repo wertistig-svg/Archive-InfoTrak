@@ -34,6 +34,7 @@ security:
         - { path: ^/article/, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/infotrak$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/communautes$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/(sources|circulation)$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/search$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/preferences$, roles: PUBLIC_ACCESS }
         - { path: ^/api/feedback$, roles: PUBLIC_ACCESS }

@@ -41,9 +41,10 @@ final class NewsImportService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly HttpClientInterface $http,
-        array $feeds = self::FEEDS,
+        ?array $feeds = null,
+        private readonly ?ArticleEnrichment $enrichment = null,
     ) {
-        $this->feeds = $feeds;
+        $this->feeds = $feeds ?? array_merge(self::FEEDS, \App\InfoTrak\PublisherCatalog::feeds());
     }
 
     /** @var array<int, array{slug: string, feedName: string, url: string, format: string, category: string, place: string, sourceName: string, sourceType: string, score: int, verified: bool, label: string, perItemSource: bool, maxPerPublisher: ?int}> */
@@ -110,7 +111,11 @@ final class NewsImportService
             'timeout' => 12,
             'max_duration' => 20,
         ]);
-        $xml = @simplexml_load_string($response->getContent());
+        $body = $response->getContent();
+        if (($feed['format'] ?? '') === 'sitemap') {
+            return array_slice(array_values(array_filter(LinfoSitemap::items($body), static fn ($i) => $i['publishedAt'] >= new \DateTimeImmutable('-14 days'))), 0, $limit);
+        }
+        $xml = @simplexml_load_string($body, \SimpleXMLElement::class, LIBXML_NONET);
         if (false === $xml) {
             return [];
         }
@@ -275,12 +280,22 @@ final class NewsImportService
      */
     private function integrate(array $item, array $feed, bool $dryRun): bool
     {
+        if ($feed['slug'] === 'reunion-circulation' && !TrafficInfo::isTraffic($item['title'])) { return false; }
         /** @var ArticleRepository $articles */
         $articles = $this->em->getRepository(Article::class);
-        if (null !== $existing = $articles->findOneBy(['sourceUrl' => $item['link']])) {
+        $existing = $articles->findOneBy(['sourceUrl' => $item['link']]);
+        if (!$existing && ($feed['format'] ?? '') === 'sitemap') {
+            $existing = $articles->findOneBy(['title' => [$item['title'], $item['title'].' - Linfo.re']]);
+        }
+        if (null !== $existing) {
             if (!$dryRun) {
                 $existing->setPublishedAt($item['publishedAt']);
                 if ($item['publisherZone'] ?? null) { $existing->setPlace($item['publisherZone']); }
+                $existing->setCategory(FeedClassifier::categoryFor($item['title'], $existing->getCategory()));
+                if (($feed['format'] ?? '') === 'sitemap') {
+                    $existing->setSourceUrl($item['link']);
+                    $this->enrichment?->enrich($existing);
+                }
                 $brief = NewsBrief::summarize($item['description'], $existing->getTitle());
                 if (mb_strlen($brief) > mb_strlen(NewsBrief::summarize($existing->getContent() ?? '', $existing->getTitle()))) {
                     $existing->setContent($brief)->setExcerpt(NewsBrief::summarize($brief, $existing->getTitle(), 70, 2));
@@ -322,6 +337,7 @@ final class NewsImportService
             ->setImportant($item['publishedAt'] > new \DateTimeImmutable('-72 hours'));
 
         if (!$dryRun) {
+            if (($feed['format'] ?? '') === 'sitemap') { $this->enrichment?->enrich($article); }
             $this->em->persist($article);
         }
 
@@ -347,11 +363,13 @@ final class NewsImportService
         }
         $existing = $sources->findOneBy(['slug' => $slug]);
         if (null !== $existing) {
+            if (!$dryRun && !$existing->getWebsiteUrl()) { $existing->setWebsiteUrl(\App\InfoTrak\PublisherCatalog::websiteFor($name)); }
             return $this->sourceCache[$slug] = $existing;
         }
 
         $source = (new Source())
             ->setName(mb_substr($name, 0, 150))
+            ->setWebsiteUrl(\App\InfoTrak\PublisherCatalog::websiteFor($name))
             ->setSlug($slug)
             ->setType($feed['sourceType'])
             ->setReliabilityScore($feed['score']);

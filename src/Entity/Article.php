@@ -125,16 +125,20 @@ class Article
     /** Domaine de la page source (pour le favicon réel du média). */
     public function getSourceHost(): ?string
     {
-        foreach ([$this->sourceUrl, $this->source?->getWebsiteUrl()] as $url) {
+        foreach ([\App\InfoTrak\PublisherCatalog::websiteFor($this->source?->getName() ?? ''), $this->source?->getWebsiteUrl(), $this->sourceUrl] as $url) {
             if (null !== $url && '' !== $url) {
                 $host = parse_url($url, PHP_URL_HOST);
-                if (\is_string($host) && '' !== $host) {
+                if (\is_string($host) && '' !== $host && $host !== 'news.google.com') {
                     return $host;
                 }
             }
         }
 
         return null;
+    }
+    public function getPublisherLogo(): ?string
+    {
+        return in_array($this->getSourceHost(), ['www.linfo.re', 'linfo.re'], true) ? '/images/publishers/linfo.png' : null;
     }
     public function getPublishedAt(): \DateTimeImmutable { return $this->publishedAt; }
     public function setPublishedAt(\DateTimeImmutable $dt): self { $this->publishedAt = $dt; return $this; }
