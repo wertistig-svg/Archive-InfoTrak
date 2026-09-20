@@ -26,6 +26,7 @@ final class NewsBrief
         $selected = []; $count = 0;
         foreach ($parts as $part) {
             $part = trim($part);
+            if (preg_match('/^(?:vidéo|video|photos?|direct|diaporama)[.!:]*$/iu', $part)) { continue; }
             if (preg_match('/(?:\[?…\]?|\.{3})/u', $part)) { continue; }
             if (!preg_match('/[.!?][»”"\']?$/u', $part)) { continue; }
             if (preg_match('/^(?:Lire (?:aussi|la suite)|À lire|Plus sur|Cet article|L’article .* est apparu)/iu', $part)) { continue; }

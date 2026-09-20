@@ -9,13 +9,14 @@ namespace App\InfoTrak;
  * - 'file' : mp4/webm/ogv direct → <video>
  * - 'youtube' : watch / youtu.be / shorts / embed → iframe youtube-nocookie
  * - 'vimeo' : vimeo.com/<id> → iframe player.vimeo.com
+ * - 'dailymotion' : URL publique ou lecteur Dailymotion
  */
 final class VideoEmbed
 {
     private function __construct() {}
 
     /**
-     * @return array{type: 'file'|'youtube'|'vimeo', embedUrl: string, videoId: ?string}|null
+     * @return array{type: 'file'|'youtube'|'vimeo'|'dailymotion', embedUrl: string, videoId: ?string}|null
      */
     public static function parse(?string $url): ?array
     {
@@ -27,6 +28,7 @@ final class VideoEmbed
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             return null;
         }
+        if (!in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true) || parse_url($url, PHP_URL_USER) !== null) { return null; }
 
         // Fichier direct (mp4/webm/ogv, avec query string éventuelle).
         if (preg_match('~\.(mp4|webm|ogv)(\?.*)?$~i', $url)) {
@@ -74,6 +76,13 @@ final class VideoEmbed
             return null;
         }
 
+        if (in_array($host, ['dailymotion.com', 'geo.dailymotion.com', 'dai.ly'], true)) {
+            $id = $host === 'dai.ly' ? trim($path, '/') : ($query['video'] ?? null);
+            if (preg_match('~/(?:embed/)?video/([A-Za-z0-9]+)~', $path, $m)) { $id = $m[1]; }
+            if (is_string($id) && preg_match('/^[A-Za-z0-9]{5,20}$/', $id)) {
+                return ['type'=>'dailymotion', 'embedUrl'=>'https://www.dailymotion.com/embed/video/'.$id, 'videoId'=>$id];
+            }
+        }
         return null;
     }
 

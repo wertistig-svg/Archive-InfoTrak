@@ -130,7 +130,7 @@ class BackendTest extends WebTestCase
         $client->request('GET', '/article/vivatech-10-entrepreneurs-pei');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('a.source-link');
+        $this->assertSelectorCount(1, 'a.article-original');
         // Encart source fiable + articles liés.
         $this->assertSelectorExists('.source-trust');
         $this->assertSelectorExists('.related-list');

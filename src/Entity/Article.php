@@ -59,6 +59,13 @@ class Article
     #[ORM\Column]
     private \DateTimeImmutable $publishedAt;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $sourcePublishedAt = null;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $sourceModifiedAt = null;
+    #[ORM\Column(nullable: true)]
+    private ?int $sourceReadingMinutes = null;
+
     #[ORM\Column(options: ['default' => false])]
     private bool $isVerified = false;
 
@@ -141,6 +148,12 @@ class Article
         return in_array($this->getSourceHost(), ['www.linfo.re', 'linfo.re'], true) ? '/images/publishers/linfo.png' : null;
     }
     public function getPublishedAt(): \DateTimeImmutable { return $this->publishedAt; }
+    public function getSourcePublishedAt(): ?\DateTimeImmutable { return $this->sourcePublishedAt; }
+    public function setSourcePublishedAt(?\DateTimeImmutable $date): self { $this->sourcePublishedAt = $date; return $this; }
+    public function getSourceModifiedAt(): ?\DateTimeImmutable { return $this->sourceModifiedAt; }
+    public function setSourceModifiedAt(?\DateTimeImmutable $date): self { $this->sourceModifiedAt = $date; return $this; }
+    public function getSourceReadingMinutes(): ?int { return $this->sourceReadingMinutes; }
+    public function setSourceReadingMinutes(?int $minutes): self { $this->sourceReadingMinutes = $minutes; return $this; }
     public function setPublishedAt(\DateTimeImmutable $dt): self { $this->publishedAt = $dt; return $this; }
     public function isVerified(): bool { return $this->isVerified; }
     public function setVerified(bool $v): self { $this->isVerified = $v; return $this; }

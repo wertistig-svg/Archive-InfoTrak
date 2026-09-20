@@ -25,10 +25,10 @@
       <a class="topic {{ not activeTopic ? 'active' }}" href="{{ path('app_home', filters|merge({topic:'', view:'all'})) }}" {{ not activeTopic ? 'aria-current="page"' : '' }}>Tous les sujets</a>
       {% for t in sidebarTopics %}<a class="topic {{ activeTopic == t ? 'active' }}" href="{{ path('app_home', filters|merge({topic:t})) }}" {{ activeTopic == t ? 'aria-current="page"' : '' }}><span class="topic-dot {{ pill[t] ?? 'extra' }}"></span>{{ t }}</a>{% endfor %}
     </section>
-    <section class="sidebar-networks" aria-label="Réseaux sociaux"><div class="section-label">RÉSEAUX & COMMUNAUTÉS</div>
-      <div class="sidebar-network-grid">{% for key, label in networks %}<a href="{{ path('app_communities', {networks:[key]}) }}"><span class="network-symbol" aria-hidden="true">{{ key == 'x' ? '𝕏' : (key == 'threads' ? '@' : (key == 'tiktok' ? '♪' : label|slice(0,1))) }}</span><span>{{ label == 'X / Twitter' ? 'X' : label }}</span></a>{% endfor %}</div>
+    <section class="sidebar-networks" aria-label="Réseaux et communautés"><div class="section-label">Réseaux & communautés</div>
+      <div class="sidebar-network-grid">{% for key, label in networks %}<a href="{{ path('app_communities', {networks:[key]}) }}" aria-label="Explorer les communautés sur {{ label }}">{% include 'components/_network_icon.html.twig' with {network:key} only %}<span>{{ label == 'X / Twitter' ? 'X / Twitter' : label }}</span></a>{% endfor %}</div>
     </section>
-    <div class="sidebar-bottom"><span class="beta-tag">BÊTA</span><small>La Réunion & la France.<br>L’essentiel, à votre rythme.</small></div>
+    <div class="sidebar-bottom"><div class="sidebar-edition"><span class="beta-tag">BÊTA</span><span>La Réunion & la France</span></div><small>L’essentiel, à votre rythme.</small></div>
   </aside>
   <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
   <main class="reader-main" id="top">
@@ -64,7 +64,6 @@
     <div class="reader-content">
       <section class="reader-heading">
         <div><p class="eyebrow">{{ todayLabel }} <span class="edition-label">ÉDITION RÉUNION</span></p><h1>{% if app.user %}Bonjour {{ app.user.displayName|split(' ')|first }}.{% else %}L’actualité, <em>à votre rythme.</em>{% endif %}</h1><p class="heading-subtitle">{{ explore ? 'Explorez toutes les actualités collectées.' : 'Vos sujets. Vos sources. L’essentiel à portée de main.' }}</p></div>
-        <button class="filter-button" id="filterButton"><span aria-hidden="true">☷</span> Personnaliser mon fil</button>
       </section>
       <nav class="zone-tabs" aria-label="Filtrer par zone">
         <a class="{{ not activeZone ? 'selected' }}" href="{{ path('app_home', filters|merge({zone:'', view:'all'})) }}">Toutes les zones</a>

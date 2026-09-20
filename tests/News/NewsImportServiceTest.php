@@ -10,6 +10,23 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class NewsImportServiceTest extends KernelTestCase
 {
+    public function testRepeatedItemsAndEnrichedUrlsDoNotDuplicateArticles(): void
+    {
+        self::bootKernel();
+        $tag = bin2hex(random_bytes(6));
+        $rss = $this->fakeRss($tag);
+        preg_match('~<item>.*?</item>~s', $rss, $match);
+        $rss = str_replace('</channel>', $match[0].'</channel>', $rss);
+        self::assertSame(2, $this->serviceWithRss($rss, $this->fakeFeed())->import()['created']);
+        $em = static::getContainer()->get('doctrine')->getManager();
+        $article = $em->getRepository(Article::class)->findOneBy(['sourceUrl'=>'https://example.com/articles/tour-reunion-'.$tag]);
+        $article->setSourceUrl('https://example.com/original/'.$tag);
+        $em->flush();
+        self::assertSame(0, $this->serviceWithRss($rss, $this->fakeFeed())->import()['created']);
+        foreach ($em->getRepository(Article::class)->findBy(['sourceUrl'=>['https://example.com/original/'.$tag, 'https://example.com/articles/arnaques-sms-'.$tag]]) as $created) { $em->remove($created); }
+        $em->flush();
+    }
+
     public function testExistingRssArticleGetsCompleteSummaryAndPublisherZone(): void
     {
         self::bootKernel();

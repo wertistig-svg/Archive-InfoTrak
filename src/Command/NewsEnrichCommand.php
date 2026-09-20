@@ -15,22 +15,25 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class NewsEnrichCommand extends Command
 {
     public function __construct(private EntityManagerInterface $em, private ArticleEnrichment $enrichment) { parent::__construct(); }
-    protected function configure(): void { $this->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Articles à examiner', 60); }
+    protected function configure(): void { $this->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Articles à examiner', 60)->addOption('source', null, InputOption::VALUE_REQUIRED, 'Nom de la source')->addOption('dry-run', null, InputOption::VALUE_NONE, 'Tester sans enregistrer')->addOption('report', null, InputOption::VALUE_NONE, 'Afficher le résultat par article'); }
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $db = $this->em->getConnection();
         if (!$db->fetchOne('SELECT pg_try_advisory_lock(974202611)')) { return Command::SUCCESS; }
         $count = 0;
         try {
-            $articles = $this->em->getRepository(Article::class)->createQueryBuilder('a')
-                ->join('a.source', 's')->where('a.isDemo = false')->andWhere('s.type = :type')->setParameter('type', 'press')
+            $query = $this->em->getRepository(Article::class)->createQueryBuilder('a')
+                ->join('a.source', 's')->where('a.isDemo = false')->andWhere('s.type IN (:types)')->setParameter('types', ['press', 'official'])
                 ->andWhere('a.place IN (:zones)')->setParameter('zones', ['La Réunion', 'France'])
-                ->orderBy('a.publishedAt', 'DESC')->setMaxResults(max(1, min(150, (int) $input->getOption('limit'))))->getQuery()->getResult();
+                ->orderBy('a.publishedAt', 'DESC')->setMaxResults(max(1, min(500, (int) $input->getOption('limit'))));
+            if ($source = $input->getOption('source')) { $query->andWhere('LOWER(s.name) = :source')->setParameter('source', mb_strtolower($source)); }
+            $articles = $query->getQuery()->getResult();
             foreach ($articles as $article) {
-                if ($this->enrichment->enrich($article)) { ++$count; $this->em->flush(); }
+                if ($this->enrichment->enrich($article)) { ++$count; if (!$input->getOption('dry-run')) { $this->em->flush(); } }
+                if ($input->getOption('report')) { $output->writeln($article->getSource()->getName().' | '.$this->enrichment->lastStatus.' | '.$article->getSlug()); }
             }
         } finally { $db->fetchOne('SELECT pg_advisory_unlock(974202611)'); }
-        $output->writeln($count.' résumé(s) complété(s).');
+        $output->writeln($count.($input->getOption('dry-run') ? ' modification(s) possible(s), simulation sans enregistrement.' : ' article(s) enrichi(s).'));
         return Command::SUCCESS;
     }
 }

@@ -5,8 +5,10 @@ use App\News\FeedClassifier;
 
 final class PublisherCatalog
 {
-    public const GROUPS = ['reunion'=>'Actualités Réunion', 'france'=>'Actualités France', 'official'=>'Informations officielles', 'cyber'=>'Cybersécurité', 'emploi'=>'Emploi', 'traffic'=>'La Circulation'];
+    public const GROUPS = ['reunion'=>'Actualités Réunion', 'france'=>'Actualités France', 'official'=>'Informations officielles', 'cyber'=>'Cybersécurité', 'emploi'=>'Emploi', 'traffic'=>'La Circulation', 'cinema'=>'Cinéma à La Réunion'];
     public const SOURCES = [
+        ['group'=>'cinema', 'name'=>'Cinépalmes Saint-Denis', 'url'=>'https://saint-denis.cinepalmes.com/#/', 'topic'=>'Cinéma & séries', 'zone'=>'La Réunion', 'mode'=>'portal', 'feed'=>''],
+        ['group'=>'cinema', 'name'=>'Cinépalmes Sainte-Marie', 'url'=>'https://sainte-marie.cinepalmes.com/#/', 'topic'=>'Cinéma & séries', 'zone'=>'La Réunion', 'mode'=>'portal', 'feed'=>''],
         ['group' => 'reunion', 'name' => 'Linfo.re', 'url' => 'https://www.linfo.re', 'topic' => 'La Réunion', 'zone' => 'La Réunion', 'mode' => 'sitemap', 'feed' => 'https://www.linfo.re/sitemap-news.xml'],
         ['group' => 'reunion', 'name' => 'Réunion La 1ère', 'url' => 'https://la1ere.franceinfo.fr/reunion', 'topic' => 'La Réunion', 'zone' => 'La Réunion', 'mode' => 'search', 'feed' => ''],
         ['group' => 'reunion', 'name' => 'Zinfos974', 'url' => 'https://www.zinfos974.com', 'topic' => 'La Réunion', 'zone' => 'La Réunion', 'mode' => 'existing', 'feed' => ''],

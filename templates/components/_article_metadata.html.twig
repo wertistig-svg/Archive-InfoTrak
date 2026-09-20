@@ -1,0 +1,9 @@
+{% macro date_fr(value) %}{% set months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'] %}{{ value|date('j', 'Indian/Reunion') }} {{ months[value|date('n', 'Indian/Reunion') - 1] }} {{ value|date('Y', 'Indian/Reunion') }} à {{ value|date('H', 'Indian/Reunion') }}h{{ value|date('i', 'Indian/Reunion') }}{% endmacro %}
+{% set publication = article.sourcePublishedAt ?? article.publishedAt %}
+<div class="article-dates" aria-label="Dates de l’article et durée de lecture">
+  <span>Publié le <time datetime="{{ publication|date('c', 'Indian/Reunion') }}">{{ _self.date_fr(publication) }}</time></span>
+  {% if article.sourceModifiedAt and article.sourceModifiedAt >= publication %}<span>Modifié le <time datetime="{{ article.sourceModifiedAt|date('c', 'Indian/Reunion') }}">{{ _self.date_fr(article.sourceModifiedAt) }}</time></span>{% endif %}
+  {% if article.sourceReadingMinutes %}<span>Lecture de l’article original : {{ article.sourceReadingMinutes }} min <small>(indiquée par la source)</small></span>
+  {% elseif article.readingSummary %}<span>Lecture du résumé : environ 1 min</span>{% endif %}
+  <small>Heure de La Réunion</small>
+</div>

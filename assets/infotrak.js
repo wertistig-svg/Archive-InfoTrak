@@ -558,9 +558,6 @@ function initInfotrak() {
         } catch { showToast('Impossible de marquer les notifications comme lues.'); }
     });
 
-    document.querySelector('#filterButton')?.addEventListener('click', () => {
-        modal?.showModal();
-    });
 
     // --- Recherche locale + recherche en direct du web (API, avec source et résumé) ---
     const searchInput = document.querySelector('#webSearchInput');

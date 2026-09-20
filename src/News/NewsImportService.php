@@ -52,6 +52,8 @@ final class NewsImportService
 
     /** @var array<string, Source> sources déjà résolues pendant l'import (évite les doublons avant flush) */
     private array $sourceCache = [];
+    private array $pendingSlugs = [];
+    private array $pendingUrls = [];
 
     /**
      * @return array{created: int, skipped: int, feeds: array<string, int>, errors: array<string, string>}
@@ -60,6 +62,8 @@ final class NewsImportService
     {
         $stats = ['created' => 0, 'skipped' => 0, 'feeds' => [], 'errors' => []];
         $this->sourceCache = [];
+        $this->pendingSlugs = [];
+        $this->pendingUrls = [];
 
         foreach ($this->feeds as $feed) {
             if (null !== $feedSlug && $feed['slug'] !== $feedSlug) {
@@ -280,10 +284,20 @@ final class NewsImportService
      */
     private function integrate(array $item, array $feed, bool $dryRun): bool
     {
+        if (isset($this->pendingUrls[$item['link']])) { return false; }
         if ($feed['slug'] === 'reunion-circulation' && !TrafficInfo::isTraffic($item['title'])) { return false; }
         /** @var ArticleRepository $articles */
         $articles = $this->em->getRepository(Article::class);
         $existing = $articles->findOneBy(['sourceUrl' => $item['link']]);
+        // Enrichment replaces aggregator links with the publisher URL. Match the same
+        // publisher, title and publication date on the next import to avoid duplicating it.
+        if (!$existing) {
+            $publisher = $feed['perItemSource'] ? ($item['publisher'] ?: $this->guessPublisher($item['title'])) : $feed['sourceName'];
+            $existing = $articles->createQueryBuilder('a')->join('a.source', 's')
+                ->where('a.title = :title AND a.publishedAt = :date AND s.name = :publisher')
+                ->setParameter('title', mb_substr($item['title'], 0, 255))->setParameter('date', $item['publishedAt'])
+                ->setParameter('publisher', $publisher)->setMaxResults(1)->getQuery()->getOneOrNullResult();
+        }
         if (!$existing && ($feed['format'] ?? '') === 'sitemap') {
             $existing = $articles->findOneBy(['title' => [$item['title'], $item['title'].' - Linfo.re']]);
         }
@@ -305,14 +319,16 @@ final class NewsImportService
         }
 
         $slug = FeedClassifier::slugify($item['title']);
-        if (null !== $articles->findOneBy(['slug' => $slug])) {
+        if (isset($this->pendingSlugs[$slug]) || null !== $articles->findOneBy(['slug' => $slug])) {
             $suffix = 2;
-            while (null !== $articles->findOneBy(['slug' => $slug.'-'.$suffix])) {
+            while (isset($this->pendingSlugs[$slug.'-'.$suffix]) || null !== $articles->findOneBy(['slug' => $slug.'-'.$suffix])) {
                 ++$suffix;
             }
             $slug = $slug.'-'.$suffix;
         }
 
+        $this->pendingSlugs[$slug] = true;
+        $this->pendingUrls[$item['link']] = true;
         $source = $this->resolveSource($item, $feed, $dryRun);
         $brief = NewsBrief::summarize($item['description'], $item['title']);
         $excerpt = NewsBrief::summarize($brief, $item['title'], 70, 2);
